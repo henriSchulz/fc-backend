@@ -51,24 +51,25 @@ export default class CardTypeEntityStore {
         });
     }
 
-    create(clientId: string, name: string, templateFront: string, templateBack: string): Promise<DefaultResponse<CardType>> {
+    async create(clientId: string, name: string, templateFront: string, templateBack: string, fieldNames: string[]): Promise<DefaultResponse<[CardType, Field[]]>> {
         const id = generateModelId();
         const createdAt = Date.now();
         const lastModifiedAt = createdAt;
         const version = VERSION;
 
-        const cardType: CardType = {
-            id,
-            createdAt,
-            lastModifiedAt,
-            version,
-            clientId,
-            name,
-            templateFront,
-            templateBack,
-        };
 
-        return new Promise((resolve) => {
+        const [cardType, error] = await new Promise<DefaultResponse<CardType>>((resolve) => {
+            const cardType: CardType = {
+                id,
+                createdAt,
+                lastModifiedAt,
+                version,
+                clientId,
+                name,
+                templateFront,
+                templateBack,
+            };
+
             this.database.run(
                 'INSERT INTO card_types (id, created_at, last_modified_at, version, client_id, name, template_front, template_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                 [
@@ -90,6 +91,18 @@ export default class CardTypeEntityStore {
                 }
             );
         });
+
+        if (error) return [null, error]
+
+        const fields: Field[] = []
+
+        for (const fieldName of fieldNames) {
+            const [field, error] = await fieldEntityStore.create(clientId, cardType!.id, fieldName)
+            if (error) return [null, error]
+            fields.push(field!)
+        }
+
+        return [[cardType!, fields], null]
     }
 
     async delete(clientId: string, cardTypeId: string): Promise<DefaultResponse<null>> {
@@ -108,7 +121,10 @@ export default class CardTypeEntityStore {
         });
         if (error) return [null, error]
         const [__, _error] = await fieldEntityStore.deleteByCardTypeId(clientId, cardTypeId)
-        return [null, error]
+
+        if(_error) return [null, _error]
+
+        return [null, null]
     }
 
     async update(clientId: string, cardType: CardType, fields: Field[]): Promise<DefaultResponse<null>> {
@@ -141,6 +157,8 @@ export default class CardTypeEntityStore {
             const [__, _error] = await fieldEntityStore.update(clientId, field)
             if (_error) return [null, _error]
         }
+
+        return [null, null]
 
     }
 }

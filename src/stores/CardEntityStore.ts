@@ -74,7 +74,7 @@ export default class CardEntityStore {
     }
 
     //contents: Record of Field ID and content of that field
-    async create(clientId: string, stackId: string, cardTypeId: string, contents: Record<string, string>): Promise<DefaultResponse<Card>> {
+    async create(clientId: string, stackId: string, cardTypeId: string, contents: Record<string, string>): Promise<DefaultResponse<[Card, FieldContent[]]>> {
         const id = generateModelId()
         const dueAt = Date.now()
         const createdAt = dueAt
@@ -83,20 +83,20 @@ export default class CardEntityStore {
         const paused = 0
         const version = VERSION
 
-        const card: Card = {
-            id,
-            createdAt,
-            lastModifiedAt,
-            version,
-            clientId,
-            stackId,
-            cardTypeId,
-            dueAt,
-            learningState,
-            paused: paused as unknown as boolean
-        }
 
-        const [_card, error] = await new Promise<DefaultResponse<Card>>((resolve) => {
+        const [card, error] = await new Promise<DefaultResponse<Card>>((resolve) => {
+            const card: Card = {
+                id,
+                createdAt,
+                lastModifiedAt,
+                version,
+                clientId,
+                stackId,
+                cardTypeId,
+                dueAt,
+                learningState,
+                paused: paused as unknown as boolean
+            }
             this.database.run(
                 'INSERT INTO cards (id, created_at, last_modified_at, version ,client_id, stack_id, card_type_id, due_at, learning_state, paused) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [
@@ -125,13 +125,15 @@ export default class CardEntityStore {
             return [null, error]
         }
 
+        const fieldContents: FieldContent[] = []
 
         for (const [fieldId, content] of Object.entries(contents)) {
-            const [_, error] = await fieldContentEntityStore.create(clientId, fieldId, card.id, stackId, content)
+            const [fieldContent, error] = await fieldContentEntityStore.create(clientId, fieldId, card!.id, stackId, content)
             if (error) return [null, error]
+            fieldContents.push(fieldContent!)
         }
 
-        return [null, null]
+        return [[card!, fieldContents], null]
 
     }
 
@@ -155,7 +157,9 @@ export default class CardEntityStore {
 
         const [__, _error] = await fieldContentEntityStore.deleteByCard(clientId, cardId)
 
-        return [null, error]
+        if (_error) return [null, _error]
+
+        return [null, null]
 
     }
 
@@ -192,11 +196,10 @@ export default class CardEntityStore {
         if (error) {
             return [null, error]
         }
-
-
         for (const fieldContent of fieldContents) {
             const [__, _error] = await fieldContentEntityStore.update(clientId, fieldContent)
             if (_error) return [null, _error]
         }
+        return [null, null]
     }
 }

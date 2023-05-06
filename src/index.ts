@@ -10,6 +10,7 @@ import CardTypeEntityStore from "./stores/CardTypeEntityStore";
 import Client from "./types/Client";
 import {addStack, createStack, deleteStack, getAllStacks, updateStack} from "./routes/stacks";
 import {addCard, createCard, deleteCard, getAllCards, updateCard} from "./routes/cards";
+import {addCardType, createCardType, getAllCardTypes} from "./routes/cardTypes";
 
 
 export const VERSION = 1
@@ -39,13 +40,20 @@ app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/add`, addStack)
 app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/update`, updateStack)
 app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/delete`, deleteStack)
 
-
 //card routes
 app.get(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}`, getAllCards)
 app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/create`, createCard)
 app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/add`, addCard)
 app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/update`, updateCard)
 app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/delete`, deleteCard)
+
+//cardType routes
+app.get(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}`, getAllCardTypes)
+app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/create`, createCardType)
+app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/add`, addCardType)
+app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/update`,)
+app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/delete`,)
+
 
 const port = process.env.PORT || 4000;
 

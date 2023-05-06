@@ -1,6 +1,6 @@
 import {Request, Response} from "express";
 import Client from "../types/Client";
-import {cardEntityStore, ERROR_PREFIX} from "../index";
+import {cardEntityStore, ERROR_PREFIX, LOG_PREFIX} from "../index";
 import Card from "../types/Card";
 
 export async function getAllCards(req: Request, res: Response) {
@@ -12,7 +12,7 @@ export async function getAllCards(req: Request, res: Response) {
         console.log(`${ERROR_PREFIX} ${error}`)
         return res.sendStatus(500)
     }
-    res.json({cards})
+    res.json(cards)
 }
 
 export async function createCard(req: Request, res: Response) {
@@ -24,13 +24,14 @@ export async function createCard(req: Request, res: Response) {
 
     if (!stackId || !cardTypeId || !contents) return res.sendStatus(422)
 
-    const [card, error] = await cardEntityStore.create(client.id, stackId, cardTypeId, contents)
+    const [[card, fieldContents], error] = await cardEntityStore.create(client.id, stackId, cardTypeId, contents)
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
         return res.sendStatus(500)
     }
-    res.json({card})
+    console.log(`${LOG_PREFIX} User(${client.id}) created Card(${card?.id})`)
+    res.json({card, fieldContents})
 }
 
 export async function addCard(req: Request, res: Response) {
@@ -53,6 +54,7 @@ export async function addCard(req: Request, res: Response) {
         console.log(`${ERROR_PREFIX} ${error}`)
         return res.sendStatus(500)
     }
+    console.log(`${LOG_PREFIX} User(${client.id}) added Card(${card?.id})`)
     res.sendStatus(200)
 }
 
@@ -72,6 +74,7 @@ export async function deleteCard(req: Request, res: Response) {
         return res.sendStatus(500)
     }
 
+    console.log(`${LOG_PREFIX} User(${client.id}) deleted Card(${cardId})`)
     res.sendStatus(200)
 }
 
@@ -87,5 +90,6 @@ export async function updateCard(req: Request, res: Response) {
         console.log(`${ERROR_PREFIX} ${error}`)
         return res.sendStatus(500)
     }
+    console.log(`${LOG_PREFIX} User(${client.id}) modified Card(${card?.id})`)
     res.sendStatus(200)
 }

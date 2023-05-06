@@ -13,7 +13,7 @@ export async function getAllStacks(req: Request, res: Response) {
         console.log(`${ERROR_PREFIX} ${error}`)
         return res.sendStatus(500)
     }
-    res.json({stacks})
+    res.json(stacks)
 }
 
 export async function createStack(req: Request, res: Response) {
@@ -33,7 +33,7 @@ export async function createStack(req: Request, res: Response) {
     }
 
     console.log(`${LOG_PREFIX} User(${client.id}) created Stack(${stack?.id})`)
-    res.json({stack})
+    res.json(stack)
 }
 
 export async function addStack(req: Request, res: Response) {
@@ -74,7 +74,7 @@ export async function updateStack(req: Request, res: Response) {
         return res.sendStatus(500)
     }
 
-    console.log(`${LOG_PREFIX} User(${client.id}) updated Stack(${stackId})`)
+    console.log(`${LOG_PREFIX} User(${client.id}) modified Stack(${stackId})`)
     res.sendStatus(200)
 }
 

@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS card_types (
     id VARCHAR(8) PRIMARY KEY NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    last_modified_at TIMESTAMP NOT NULL,
+    createdAt TIMESTAMP NOT NULL,
+    lastModifiedAt TIMESTAMP NOT NULL,
     version INTEGER NOT NULL,
     name VARCHAR (30) NOT NULL,
-    template_front TEXT NOT NULL,
-    template_back TEXT NOT NULL,
-    client_id VARCHAR (8) NOT NULL REFERENCES clients(id)
+    templateFront TEXT NOT NULL,
+    templateBack TEXT NOT NULL,
+    clientId VARCHAR (8) NOT NULL REFERENCES clients(id)
 )
