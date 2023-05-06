@@ -6,13 +6,15 @@ import {VERSION} from "../index";
 
 export default class StackEntityStore {
     private database: Database
+    uniqueId: string
 
     constructor(database: Database) {
         this.database = database
+        this.uniqueId = "ec976c00-5c5e-4d80-85e7-c82885cf0a87"
     }
 
-    add(stack: Stack): Promise<DefaultResponse<null>> {
-        const { id, createdAt, version, clientId, name } = stack;
+    add(clientId: string, stack: Stack): Promise<DefaultResponse<null>> {
+        const {id, createdAt, version, name} = stack;
         const lastModifiedAt = Date.now();
         return new Promise((resolve) => {
             this.database.run(

@@ -7,13 +7,15 @@ import {Database} from "sqlite3";
 export default class FieldContentEntityStore {
 
     private database: Database
+    uniqueId: string
 
     constructor(database: Database) {
         this.database = database
+        this.uniqueId = "aabfcb48-b452-4919-a0a1-51e3c573de81"
     }
 
-    add(fieldContent: FieldContent): Promise<DefaultResponse<null>> {
-        const {id, createdAt, version, fieldId, cardId, stackId, clientId, content} = fieldContent;
+    add(clientId: string, fieldContent: FieldContent): Promise<DefaultResponse<null>> {
+        const {id, createdAt, version, fieldId, cardId, stackId, content} = fieldContent;
         const lastModifiedAt = Date.now()
         return new Promise((resolve) => {
             this.database.run(

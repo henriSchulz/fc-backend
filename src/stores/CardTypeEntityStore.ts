@@ -2,18 +2,21 @@ import {Database} from "sqlite3";
 import {DefaultResponse} from "../types/responses/DefaultResponse";
 import CardType from "../types/CardType";
 import {generateModelId} from "../utils";
-import {VERSION} from "../index";
+import {fieldEntityStore, VERSION} from "../index";
+import FieldEntityStore from "./FieldEntityStore";
 
 export default class CardTypeEntityStore {
 
     private database: Database
+    uniqueId: string
 
     constructor(database: Database) {
         this.database = database
+        this.uniqueId = "8cd6cae3-8486-4136-8e34-b59279b7b6bd"
     }
 
-    add(cardType: CardType): Promise<DefaultResponse<null>> {
-        const {id, createdAt, version, clientId, name, templateFront, templateBack} = cardType;
+    add(clientId: string,cardType: CardType): Promise<DefaultResponse<null>> {
+        const {id, createdAt, version, name, templateFront, templateBack} = cardType;
         const lastModifiedAt = Date.now()
         return new Promise((resolve) => {
             this.database.run(
@@ -88,8 +91,8 @@ export default class CardTypeEntityStore {
         });
     }
 
-    delete(clientId: string, cardTypeId: string): Promise<DefaultResponse<null>> {
-        return new Promise((resolve) => {
+    async delete(clientId: string, cardTypeId: string): Promise<DefaultResponse<null>> {
+        const [_, error] = await new Promise<DefaultResponse<null>>((resolve) => {
             this.database.run(
                 'DELETE FROM card_types WHERE id = ? AND client_id = ?',
                 [cardTypeId, clientId],
@@ -102,6 +105,9 @@ export default class CardTypeEntityStore {
                 }
             );
         });
+        if (error) return [null, error]
+        const [__, _error] = await fieldEntityStore.deleteByCardTypeId(clientId, cardTypeId)
+        return [null, error]
     }
 
     update(cardType: CardType): Promise<DefaultResponse<null>> {

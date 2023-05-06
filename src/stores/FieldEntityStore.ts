@@ -7,13 +7,15 @@ import {Database} from "sqlite3";
 export default class FieldEntityStore {
 
     private database: Database;
+    uniqueId: string;
 
     constructor(database: Database) {
         this.database = database;
+        this.uniqueId = "bf629b15-e95b-4b52-8571-3e5550e47ee8"
     }
 
-    add(field: Field): Promise<DefaultResponse<null>> {
-        const {id, createdAt, version, name, cardTypeId, clientId} = field;
+    add(clientId: string, field: Field): Promise<DefaultResponse<null>> {
+        const {id, createdAt, version, name, cardTypeId} = field;
         const lastModifiedAt = Date.now()
         return new Promise((resolve) => {
             this.database.run(
@@ -29,7 +31,6 @@ export default class FieldEntityStore {
             );
         });
     }
-
 
     getAll(clientId: string): Promise<DefaultResponse<Field[]>> {
         return new Promise((resolve) => {
@@ -117,6 +118,24 @@ export default class FieldEntityStore {
             );
         });
     }
+
+    deleteByCardTypeId(clientId: string, cardTypeId: string): Promise<DefaultResponse<null>> {
+        return new Promise((resolve) => {
+            this.database.run(
+                'DELETE FROM fields card_type_id = ? AND client_id = ?',
+                [cardTypeId, clientId],
+                (err) => {
+                    if (err) {
+                        resolve([null, String(err)])
+                    } else {
+                        resolve([null, null]);
+                    }
+                }
+            );
+        });
+    }
+
+
 
     update(field: Field): Promise<DefaultResponse<null>> {
         const {id: fieldId, clientId, cardTypeId, ...newField} = field;

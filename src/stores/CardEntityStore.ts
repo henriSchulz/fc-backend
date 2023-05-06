@@ -2,19 +2,21 @@ import {Database} from "sqlite3";
 import {DefaultResponse} from "../types/responses/DefaultResponse";
 import Card from "../types/Card";
 import {generateModelId} from "../utils";
-import {VERSION} from "../index";
+import {fieldContentEntityStore, VERSION} from "../index";
 import FieldContentEntityStore from "./FieldContentEntityStore";
 
 
 export default class CardEntityStore {
-    private database: Database
+    private readonly database: Database
+    uniqueId: string
 
     constructor(database: Database) {
         this.database = database
+        this.uniqueId = "cbeeab63-87f1-4f41-b114-89588f59c8ed"
     }
 
-    add(card: Card): Promise<DefaultResponse<null>> {
-        const {id, createdAt, version, clientId, stackId, cardTypeId, dueAt, learningState, paused} = card;
+    add(clientId: string, card: Card): Promise<DefaultResponse<null>> {
+        const {id, createdAt, version, stackId, cardTypeId, dueAt, learningState, paused} = card;
         const lastModifiedAt = Date.now()
         return new Promise((resolve) => {
             this.database.run(
@@ -41,7 +43,6 @@ export default class CardEntityStore {
             )
         })
     }
-
 
     getAll(clientId: string): Promise<DefaultResponse<Card[]>> {
         return new Promise((resolve) => this.database.all("SELECT * FROM cards WHERE client_id = ?", [clientId], (err, rows: Card[]) => {
@@ -123,12 +124,13 @@ export default class CardEntityStore {
             return [null, error]
         }
 
-        const fieldContentEntityStore = new FieldContentEntityStore(this.database)
+
         for (const [fieldId, content] of Object.entries(contents)) {
             const [_, error] = await fieldContentEntityStore.create(clientId, fieldId, card.id, stackId, content)
             if (error) return [null, error]
         }
 
+        return [null, null]
 
     }
 
@@ -149,8 +151,6 @@ export default class CardEntityStore {
         });
 
         if (error) return [null, error]
-
-        const fieldContentEntityStore = new FieldContentEntityStore(this.database)
 
         const [__, _error] = await fieldContentEntityStore.deleteByCard(clientId, cardId)
 
@@ -209,19 +209,17 @@ export default class CardEntityStore {
     update(card: Card): Promise<DefaultResponse<null>> {
         const {clientId, id: cardId, ...newCard} = card;
         return new Promise((resolve) => {
-            const {cardTypeId, dueAt, learningState, paused} = newCard;
+            const {dueAt, learningState, paused} = newCard;
             const lastModifiedAt = Date.now();
             this.database.run(
                 `UPDATE cards
-                 SET card_type_id     = ?,
-                     due_at           = ?,
+                 SET due_at           = ?,
                      learning_state   = ?,
                      paused           = ?,
                      last_modified_at = ?
                  WHERE id = ?
                    AND client_id = ?`,
                 [
-                    cardTypeId,
                     dueAt,
                     learningState,
                     paused,

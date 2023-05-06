@@ -7,47 +7,41 @@ import CardEntityStore from "./stores/CardEntityStore";
 import FieldContentEntityStore from "./stores/FieldContentEntityStore";
 import FieldEntityStore from "./stores/FieldEntityStore";
 import CardTypeEntityStore from "./stores/CardTypeEntityStore";
+import Client from "./types/Client";
+import {addStack, createStack, deleteStack, getAllStacks, updateStack} from "./routes/stacks";
 
 
 export const VERSION = 1
+export const DEFAULT_ROUTE = `/api/v${VERSION}`
+export const LOG_PREFIX = "[LOG]"
+export const ERROR_PREFIX = "[ERROR]"
 
 const database = new sqlite3.Database(`${__dirname}/data/fc_data.db`)
 
 createSQLTables(database)
 
-const stackEntityStore = new StackEntityStore(database)
-const cardEntityStore = new CardEntityStore(database)
-const fieldEntityStore = new FieldEntityStore(database)
-const fieldContentEntityStore = new FieldContentEntityStore(database)
-const cardTypeEntityStore = new CardTypeEntityStore(database)
-
-async function main() {
-    const clientId = "11111111"
-    const stackId = "cc061128"
-    const cardTypeId = "40f9dccc"
-    const field1Id = "c0c3264b"
-    const field2Id = "ed481638"
-    const cardId = "e92dedda"
+export const stackEntityStore = new StackEntityStore(database)
+export const cardEntityStore = new CardEntityStore(database)
+export const fieldEntityStore = new FieldEntityStore(database)
+export const fieldContentEntityStore = new FieldContentEntityStore(database)
+export const cardTypeEntityStore = new CardTypeEntityStore(database)
 
 
-    await fieldContentEntityStore.create(clientId,field1Id, cardId,stackId, "Hallo")
-    await fieldContentEntityStore.create(clientId,field2Id, cardId,stackId, "Hallo")
+const app = express();
+
+app.use(express.json())
+
+//stack Routes
+app.get(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}`, getAllStacks)
+app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/create`, createStack)
+app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/add`, addStack)
+app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/update`, updateStack)
+app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/delete`, deleteStack)
 
 
-}
+const port = process.env.PORT || 4000;
 
-main()
 
-// const app = express();
-//
-//
-// app.get('/', (req: Request, res: Response) => {
-//     res.send('Hello, World!');
-// });
-//
-// const port = process.env.PORT || 3000;
-//
-//
-// app.listen(port, () => {
-//     console.log(`Server listening on port ${port}.`);
-// });
+app.listen(port, () => {
+    console.log(`Server listening on port ${port}.`);
+});
