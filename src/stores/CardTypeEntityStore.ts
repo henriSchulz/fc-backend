@@ -4,6 +4,7 @@ import CardType from "../types/CardType";
 import {generateModelId} from "../utils";
 import {fieldEntityStore, VERSION} from "../index";
 import FieldEntityStore from "./FieldEntityStore";
+import Field from "../types/Field";
 
 export default class CardTypeEntityStore {
 
@@ -15,7 +16,7 @@ export default class CardTypeEntityStore {
         this.uniqueId = "8cd6cae3-8486-4136-8e34-b59279b7b6bd"
     }
 
-    add(clientId: string,cardType: CardType): Promise<DefaultResponse<null>> {
+    add(clientId: string, cardType: CardType): Promise<DefaultResponse<null>> {
         const {id, createdAt, version, name, templateFront, templateBack} = cardType;
         const lastModifiedAt = Date.now()
         return new Promise((resolve) => {
@@ -110,9 +111,9 @@ export default class CardTypeEntityStore {
         return [null, error]
     }
 
-    update(cardType: CardType): Promise<DefaultResponse<null>> {
-        const {id: cardTypeId, clientId, ...newCardType} = cardType;
-        return new Promise((resolve) => {
+    async update(clientId: string, cardType: CardType, fields: Field[]): Promise<DefaultResponse<null>> {
+        const {id: cardTypeId, ...newCardType} = cardType;
+        const [_, error] = await new Promise<DefaultResponse<null>>((resolve) => {
             const {name, templateFront, templateBack} = newCardType;
             const lastModifiedAt = Date.now();
             this.database.run(
@@ -133,5 +134,13 @@ export default class CardTypeEntityStore {
                 }
             );
         });
+
+        if (error) return [null, error]
+
+        for (const field of fields) {
+            const [__, _error] = await fieldEntityStore.update(clientId, field)
+            if (_error) return [null, _error]
+        }
+
     }
 }

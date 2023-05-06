@@ -4,6 +4,7 @@ import Card from "../types/Card";
 import {generateModelId} from "../utils";
 import {fieldContentEntityStore, VERSION} from "../index";
 import FieldContentEntityStore from "./FieldContentEntityStore";
+import FieldContent from "../types/FieldContent";
 
 
 export default class CardEntityStore {
@@ -158,57 +159,9 @@ export default class CardEntityStore {
 
     }
 
-    updateDueAt(clientId: string, cardId: string, newDueAt: number): Promise<DefaultResponse<null>> {
-        return new Promise((resolve) => {
-            this.database.run(
-                'UPDATE cards SET due_at = ?, last_modified_at = ? WHERE id = ? AND client_id = ?',
-                [newDueAt, Date.now(), cardId, clientId],
-                (err) => {
-                    if (err) {
-                        resolve([null, String(err)])
-                    } else {
-                        resolve([null, null]);
-                    }
-                }
-            );
-        });
-    }
-
-    updateLearningState(clientId: string, cardId: string, newLearningState: number): Promise<DefaultResponse<null>> {
-        return new Promise((resolve) => {
-            this.database.run(
-                'UPDATE cards SET learning_state = ?, last_modified_at = ? WHERE id = ? AND client_id = ?',
-                [newLearningState, Date.now(), cardId, clientId],
-                (err) => {
-                    if (err) {
-                        resolve([null, String(err)])
-                    } else {
-                        resolve([null, null]);
-                    }
-                }
-            );
-        });
-    }
-
-    updatePaused(clientId: string, cardId: string, newPaused: boolean): Promise<DefaultResponse<null>> {
-        return new Promise((resolve) => {
-            this.database.run(
-                'UPDATE cards SET paused = ?, last_modified_at = ? WHERE id = ? AND client_id = ?',
-                [newPaused ? 1 : 0, Date.now(), cardId, clientId],
-                (err) => {
-                    if (err) {
-                        resolve([null, String(err)])
-                    } else {
-                        resolve([null, null]);
-                    }
-                }
-            );
-        });
-    }
-
-    update(card: Card): Promise<DefaultResponse<null>> {
-        const {clientId, id: cardId, ...newCard} = card;
-        return new Promise((resolve) => {
+    async update(clientId: string, card: Card, fieldContents: FieldContent[]): Promise<DefaultResponse<null>> {
+        const {id: cardId, ...newCard} = card;
+        const [_, error] = await new Promise<DefaultResponse<null>>((resolve) => {
             const {dueAt, learningState, paused} = newCard;
             const lastModifiedAt = Date.now();
             this.database.run(
@@ -236,7 +189,14 @@ export default class CardEntityStore {
                 }
             );
         });
+        if (error) {
+            return [null, error]
+        }
+
+
+        for (const fieldContent of fieldContents) {
+            const [__, _error] = await fieldContentEntityStore.update(clientId, fieldContent)
+            if (_error) return [null, _error]
+        }
     }
-
-
 }

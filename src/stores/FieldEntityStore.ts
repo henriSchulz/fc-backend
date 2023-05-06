@@ -137,8 +137,8 @@ export default class FieldEntityStore {
 
 
 
-    update(field: Field): Promise<DefaultResponse<null>> {
-        const {id: fieldId, clientId, cardTypeId, ...newField} = field;
+    update(clientId: string, field: Field): Promise<DefaultResponse<null>> {
+        const {id: fieldId, cardTypeId, ...newField} = field;
         return new Promise((resolve) => {
             const {name} = newField;
             const lastModifiedAt = Date.now();

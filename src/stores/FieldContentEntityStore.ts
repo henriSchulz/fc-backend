@@ -124,13 +124,13 @@ export default class FieldContentEntityStore {
         });
     }
 
-    update(fieldContent: FieldContent): Promise<DefaultResponse<null>> {
-        const {id: fieldContentId, clientId, ...newFieldContent} = fieldContent;
+    update(clientId: string, fieldContent: FieldContent): Promise<DefaultResponse<null>> {
+        const {id: fieldContentId, ...newFieldContent} = fieldContent;
         return new Promise((resolve) => {
             const {content} = newFieldContent;
             const lastModifiedAt = Date.now();
             this.database.run(`UPDATE fieldContents
-                               SET content = ?,
+                               SET content          = ?,
                                    last_modified_at = ?
                                WHERE id = ?
                                  AND client_id = ?`,
