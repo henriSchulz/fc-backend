@@ -3,6 +3,8 @@ import {DefaultResponse} from "../types/responses/DefaultResponse";
 import Card from "../types/Card";
 import {generateModelId} from "../utils";
 import {VERSION} from "../index";
+import FieldContentEntityStore from "./FieldContentEntityStore";
+
 
 export default class CardEntityStore {
     private database: Database
@@ -10,6 +12,36 @@ export default class CardEntityStore {
     constructor(database: Database) {
         this.database = database
     }
+
+    add(card: Card): Promise<DefaultResponse<null>> {
+        const {id, createdAt, version, clientId, stackId, cardTypeId, dueAt, learningState, paused} = card;
+        const lastModifiedAt = Date.now()
+        return new Promise((resolve) => {
+            this.database.run(
+                'INSERT INTO cards (id, created_at, last_modified_at, version, client_id, stack_id, card_type_id, due_at, learning_state, paused) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [
+                    id,
+                    createdAt,
+                    lastModifiedAt,
+                    version,
+                    clientId,
+                    stackId,
+                    cardTypeId,
+                    dueAt,
+                    learningState,
+                    paused,
+                ],
+                err => {
+                    if (err) {
+                        resolve([null, String(err)])
+                    } else {
+                        resolve([null, null])
+                    }
+                }
+            )
+        })
+    }
+
 
     getAll(clientId: string): Promise<DefaultResponse<Card[]>> {
         return new Promise((resolve) => this.database.all("SELECT * FROM cards WHERE client_id = ?", [clientId], (err, rows: Card[]) => {
@@ -23,8 +55,24 @@ export default class CardEntityStore {
         }))
     }
 
-    create(clientId: string, stackId: string, cardTypeId: string): Promise<DefaultResponse<Card>> {
+    getAllByStackId(stackId: string, clientId: string): Promise<DefaultResponse<Card[]>> {
+        return new Promise((resolve) => {
+            this.database.all(
+                "SELECT * FROM cards WHERE stack_id = ? AND client_id = ?",
+                [stackId, clientId],
+                (err, rows: Card[]) => {
+                    if (err) {
+                        resolve([null, String(err)]);
+                    } else {
+                        resolve([rows, null]);
+                    }
+                }
+            );
+        });
+    }
 
+    //contents: Record of Field ID and content of that field
+    async create(clientId: string, stackId: string, cardTypeId: string, contents: Record<string, string>): Promise<DefaultResponse<Card>> {
         const id = generateModelId()
         const dueAt = Date.now()
         const createdAt = dueAt
@@ -46,7 +94,7 @@ export default class CardEntityStore {
             paused: paused as unknown as boolean
         }
 
-        return new Promise((resolve) => {
+        const [_card, error] = await new Promise<DefaultResponse<Card>>((resolve) => {
             this.database.run(
                 'INSERT INTO cards (id, created_at, last_modified_at, version ,client_id, stack_id, card_type_id, due_at, learning_state, paused) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [
@@ -70,10 +118,23 @@ export default class CardEntityStore {
                 }
             );
         });
+
+        if (error) {
+            return [null, error]
+        }
+
+        const fieldContentEntityStore = new FieldContentEntityStore(this.database)
+        for (const [fieldId, content] of Object.entries(contents)) {
+            const [_, error] = await fieldContentEntityStore.create(clientId, fieldId, card.id, stackId, content)
+            if (error) return [null, error]
+        }
+
+
     }
 
-    delete(clientId: string, cardId: string): Promise<DefaultResponse<null>> {
-        return new Promise((resolve) => {
+    async delete(clientId: string, cardId: string): Promise<DefaultResponse<null>> {
+
+        const [_, error] = await new Promise<DefaultResponse<null>>((resolve) => {
             this.database.run(
                 'DELETE FROM cards WHERE id = ? AND client_id = ?',
                 [cardId, clientId],
@@ -86,6 +147,15 @@ export default class CardEntityStore {
                 }
             );
         });
+
+        if (error) return [null, error]
+
+        const fieldContentEntityStore = new FieldContentEntityStore(this.database)
+
+        const [__, _error] = await fieldContentEntityStore.deleteByCard(clientId, cardId)
+
+        return [null, error]
+
     }
 
     updateDueAt(clientId: string, cardId: string, newDueAt: number): Promise<DefaultResponse<null>> {
@@ -137,19 +207,19 @@ export default class CardEntityStore {
     }
 
     update(card: Card): Promise<DefaultResponse<null>> {
-        const { clientId, id: cardId, ...newCard } = card;
+        const {clientId, id: cardId, ...newCard} = card;
         return new Promise((resolve) => {
-            const { cardTypeId, dueAt, learningState, paused } = newCard;
+            const {cardTypeId, dueAt, learningState, paused} = newCard;
             const lastModifiedAt = Date.now();
             this.database.run(
-                `UPDATE cards SET
-        card_type_id = ?,
-        due_at = ?,
-        learning_state = ?,
-        paused = ?,
-        last_modified_at = ?
-      WHERE
-        id = ? AND client_id = ?`,
+                `UPDATE cards
+                 SET card_type_id     = ?,
+                     due_at           = ?,
+                     learning_state   = ?,
+                     paused           = ?,
+                     last_modified_at = ?
+                 WHERE id = ?
+                   AND client_id = ?`,
                 [
                     cardTypeId,
                     dueAt,

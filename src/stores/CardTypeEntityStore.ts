@@ -12,6 +12,25 @@ export default class CardTypeEntityStore {
         this.database = database
     }
 
+    add(cardType: CardType): Promise<DefaultResponse<null>> {
+        const {id, createdAt, version, clientId, name, templateFront, templateBack} = cardType;
+        const lastModifiedAt = Date.now()
+        return new Promise((resolve) => {
+            this.database.run(
+                'INSERT INTO card_types (id, created_at, last_modified_at, version, client_id, name, template_front, template_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [id, createdAt, lastModifiedAt, version, clientId, name, templateFront, templateBack],
+                err => {
+                    if (err) {
+                        resolve([null, String(err)]);
+                    } else {
+                        resolve([null, null]);
+                    }
+                }
+            );
+        });
+    }
+
+
     getAll(clientId: string): Promise<DefaultResponse<CardType[]>> {
         return new Promise((resolve) => {
             this.database.all(
@@ -86,18 +105,18 @@ export default class CardTypeEntityStore {
     }
 
     update(cardType: CardType): Promise<DefaultResponse<null>> {
-        const { id: cardTypeId, clientId, ...newCardType } = cardType;
+        const {id: cardTypeId, clientId, ...newCardType} = cardType;
         return new Promise((resolve) => {
-            const { name, templateFront, templateBack } = newCardType;
+            const {name, templateFront, templateBack} = newCardType;
             const lastModifiedAt = Date.now();
             this.database.run(
-                `UPDATE card_types SET
-        name = ?,
-        template_front = ?,
-        template_back = ?,
-        last_modified_at = ?
-      WHERE
-        id = ? AND client_id = ?`,
+                `UPDATE card_types
+                 SET name             = ?,
+                     template_front   = ?,
+                     template_back    = ?,
+                     last_modified_at = ?
+                 WHERE id = ?
+                   AND client_id = ?`,
                 [name, templateFront, templateBack, lastModifiedAt, cardTypeId, clientId],
                 (err) => {
                     if (err) {

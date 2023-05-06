@@ -7,6 +7,6 @@ CREATE TABLE IF NOT EXISTS cards (
     stack_id VARCHAR (8) NOT NULL REFERENCES stacks(id),
     card_type_id VARCHAR (8) NOT NULL REFERENCES card_types(id),
     due_at TIMESTAMP NOT NULL,
-    learning_stack INTEGER NOT NULL,
+    learning_state INTEGER NOT NULL,
     paused NUMBER(1)
 )

@@ -12,6 +12,25 @@ export default class FieldEntityStore {
         this.database = database;
     }
 
+    add(field: Field): Promise<DefaultResponse<null>> {
+        const {id, createdAt, version, name, cardTypeId, clientId} = field;
+        const lastModifiedAt = Date.now()
+        return new Promise((resolve) => {
+            this.database.run(
+                'INSERT INTO fields (id, created_at, last_modified_at, version, name, card_type_id, client_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [id, createdAt, lastModifiedAt, version, name, cardTypeId, clientId],
+                err => {
+                    if (err) {
+                        resolve([null, String(err)]);
+                    } else {
+                        resolve([null, null]);
+                    }
+                }
+            );
+        });
+    }
+
+
     getAll(clientId: string): Promise<DefaultResponse<Field[]>> {
         return new Promise((resolve) => {
             this.database.all(
@@ -100,12 +119,17 @@ export default class FieldEntityStore {
     }
 
     update(field: Field): Promise<DefaultResponse<null>> {
-        const { id: fieldId, clientId, cardTypeId, ...newField } = field;
+        const {id: fieldId, clientId, cardTypeId, ...newField} = field;
         return new Promise((resolve) => {
-            const { name } = newField;
+            const {name} = newField;
             const lastModifiedAt = Date.now();
             this.database.run(
-                `UPDATE fields SET name = ?, last_modified_at = ? WHERE id = ? AND card_type_id = ? AND client_id = ?`,
+                `UPDATE fields
+                 SET name             = ?,
+                     last_modified_at = ?
+                 WHERE id = ?
+                   AND card_type_id = ?
+                   AND client_id = ?`,
                 [name, lastModifiedAt, fieldId, cardTypeId, clientId],
                 (err) => {
                     if (err) {

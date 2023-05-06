@@ -22,10 +22,21 @@ const fieldContentEntityStore = new FieldContentEntityStore(database)
 const cardTypeEntityStore = new CardTypeEntityStore(database)
 
 async function main() {
-    const [stacks, error] = await stackEntityStore.getAll("11111111")
-    console.log(stacks)
+    const clientId = "11111111"
+    const stackId = "cc061128"
+    const cardTypeId = "40f9dccc"
+    const field1Id = "c0c3264b"
+    const field2Id = "ed481638"
+    const cardId = "e92dedda"
+
+
+    await fieldContentEntityStore.create(clientId,field1Id, cardId,stackId, "Hallo")
+    await fieldContentEntityStore.create(clientId,field2Id, cardId,stackId, "Hallo")
+
+
 }
 
+main()
 
 // const app = express();
 //
