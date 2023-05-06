@@ -4,5 +4,6 @@ CREATE TABLE IF NOT EXISTS fields (
     last_modified_at TIMESTAMP NOT NULL,
     version INTEGER NOT NULL,
     name VARCHAR (30) NOT NULL,
-    card_type_id VARCHAR(8) REFERENCES card_types(id)
+    card_type_id VARCHAR(8) REFERENCES card_types(id),
+    client_id VARCHAR (8) NOT NULL REFERENCES clients(id)
 )

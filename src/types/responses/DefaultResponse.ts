@@ -1,1 +1,1 @@
-export type DefaultResponse<T> = [data: T, error: string | null]
+export type DefaultResponse<T> = [data: T | null, error: string | null]

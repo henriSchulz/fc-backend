@@ -1,8 +1,5 @@
 import fs from "fs";
 import {Database} from "sqlite3";
-import {DefaultResponse, NoData} from "./types/responses/DefaultResponse";
-import Stack from "./types/Stack";
-import {generateModelId} from "./utils";
 
 export type SQLFile = "clients" |
     "stacks" | "cards" | "fields" |

@@ -4,14 +4,14 @@ import {generateModelId} from "../utils";
 import Stack from "../types/Stack";
 import {VERSION} from "../index";
 
-export class StackEntityStore {
+export default class StackEntityStore {
     private database: Database
 
     constructor(database: Database) {
         this.database = database
     }
 
-    getAll(clientId: string): Promise<DefaultResponse<Stack>> {
+    getAll(clientId: string): Promise<DefaultResponse<Stack[]>> {
         return new Promise((resolve) => this.database.all("SELECT * FROM stacks WHERE client_id = ?", [clientId], (err, rows: Stack[]) => {
             if (err) {
                 resolve([
@@ -27,7 +27,7 @@ export class StackEntityStore {
     create(clientId: string, name: string): Promise<DefaultResponse<Stack>> {
         return new Promise((resolve) => {
             const id = generateModelId();
-            const createdAt = new Date.now()
+            const createdAt = Date.now()
             const lastModifiedAt = createdAt;
             const version = VERSION;
 

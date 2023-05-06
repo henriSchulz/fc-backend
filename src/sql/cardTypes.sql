@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS card_types (
     version INTEGER NOT NULL,
     name VARCHAR (30) NOT NULL,
     template_front TEXT NOT NULL,
-    template_back TEXT NOT NULL
+    template_back TEXT NOT NULL,
+    client_id VARCHAR (8) NOT NULL REFERENCES clients(id)
 )

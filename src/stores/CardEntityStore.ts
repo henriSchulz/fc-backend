@@ -4,14 +4,14 @@ import Card from "../types/Card";
 import {generateModelId} from "../utils";
 import {VERSION} from "../index";
 
-export class ClientEntityStore {
+export default class CardEntityStore {
     private database: Database
 
     constructor(database: Database) {
         this.database = database
     }
 
-    getAll(clientId: string): Promise<DefaultResponse<Card>> {
+    getAll(clientId: string): Promise<DefaultResponse<Card[]>> {
         return new Promise((resolve) => this.database.all("SELECT * FROM cards WHERE client_id = ?", [clientId], (err, rows: Card[]) => {
             if (err) {
                 resolve([
@@ -43,7 +43,7 @@ export class ClientEntityStore {
             cardTypeId,
             dueAt,
             learningState,
-            paused: paused === 1
+            paused: paused as unknown as boolean
         }
 
         return new Promise((resolve) => {
