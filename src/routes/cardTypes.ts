@@ -23,7 +23,7 @@ export async function getAllCardTypes(req: Request, res: Response) {
 
 //payload: {cardType: CardType, fields: Field[]}
 export async function createCardType(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
@@ -47,7 +47,7 @@ export async function createCardType(req: Request, res: Response) {
 
 //payload: CardType[]
 export async function addCardType(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
     const cardType: CardType = req.body.cardType
@@ -67,7 +67,7 @@ export async function addCardType(req: Request, res: Response) {
 
 //payload: {cardType: CardType, fields: Field[]}
 export async function updateCardType(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
     const cardType: CardType = req.body.cardType
@@ -91,7 +91,7 @@ export async function updateCardType(req: Request, res: Response) {
 
 //no payload
 export async function deleteCardType(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
     const {id: cardTypeId} = req.body

@@ -5,7 +5,7 @@ import {ERROR_PREFIX, fieldEntityStore} from "../index";
 
 //payload: Field[]
 export async function getAllFields(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     const [fields, error] = await fieldEntityStore.getAll(client.id)
 

@@ -14,7 +14,7 @@ import {getAllFields} from "./routes/fields";
 import {getAllFieldContents} from "./routes/FieldContents";
 import exp from "constants";
 import ClientEntityStore from "./stores/ClientEntityStore";
-import {createClient, getUser, login, logout} from "./routes/auth";
+import {authMiddleware, createClient, getUser, login, logout} from "./routes/auth";
 import {log} from "util";
 
 
@@ -39,35 +39,35 @@ const app = express();
 
 app.use(express.json())
 
+
 //stack routes
-app.get(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}`, getAllStacks) //payload: Stack[]
-app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/create`, createStack) //payload: Stack
-app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/add`, addStack) //payload: Stack
-app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/update`, updateStack) //payload: Stack
-app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/delete`, deleteStack) //no payload
+app.get(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}`, authMiddleware, getAllStacks) //payload: Stack[]
+app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/create`, authMiddleware, createStack) //payload: Stack
+app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/add`, authMiddleware, addStack) //payload: Stack
+app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/update`, authMiddleware, updateStack) //payload: Stack
+app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/delete`, authMiddleware, deleteStack) //no payload
 
 //card routes
-app.get(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}`, getAllCards) //payload: Card[]
-app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/create`, createCard) //payload: {card: Card, fieldContents: FieldContent[]}
-app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/add`, addCard) //payload: Card
-app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/update`, updateCard)  //payload: {card: Card, fieldContents: FieldContent[]}
-app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/delete`, deleteCard) //no payload
+app.get(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}`, authMiddleware, getAllCards) //payload: Card[]
+app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/create`, authMiddleware, createCard) //payload: {card: Card, fieldContents: FieldContent[]}
+app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/add`, authMiddleware, addCard) //payload: Card
+app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/update`, authMiddleware, updateCard)  //payload: {card: Card, fieldContents: FieldContent[]}
+app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/delete`, authMiddleware, deleteCard) //no payload
 
 //cardType routes
-app.get(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}`, getAllCardTypes) //payload: CardType[]
-app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/create`, createCardType) //payload: {cardType: CardType, fields: Field[]}
-app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/add`, addCardType) //payload: CardType[]
-app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/update`, updateCardType) //no payload
-app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/delete`, deleteCardType) //payload: {cardType: CardType, fields: Field[]}
+app.get(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}`,authMiddleware, getAllCardTypes) //payload: CardType[]
+app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/create`,authMiddleware, createCardType) //payload: {cardType: CardType, fields: Field[]}
+app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/add`,authMiddleware, addCardType) //payload: CardType[]
+app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/update`,authMiddleware, updateCardType) //no payload
+app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/delete`,authMiddleware, deleteCardType) //payload: {cardType: CardType, fields: Field[]}
 
 //fieldRoutes
-app.get(`${DEFAULT_ROUTE}/${fieldEntityStore.uniqueId}`, getAllFields) //payload: Field[]
+app.get(`${DEFAULT_ROUTE}/${fieldEntityStore.uniqueId}`,authMiddleware, getAllFields) //payload: Field[]
 
 //fieldContentRoutes
-app.get(`${DEFAULT_ROUTE}/${fieldContentEntityStore.uniqueId}`, getAllFieldContents) //payload: FieldContent[]
+app.get(`${DEFAULT_ROUTE}/${fieldContentEntityStore.uniqueId}`,authMiddleware, getAllFieldContents) //payload: FieldContent[]
 
 //auth routes
-
 app.post(`${DEFAULT_ROUTE}/${clientEntityStore.uniqueId}/signup`, createClient) //payload: Client
 app.post(`${DEFAULT_ROUTE}/${clientEntityStore.uniqueId}/login`, login) //payload: Client
 app.delete(`${DEFAULT_ROUTE}/${clientEntityStore.uniqueId}`, logout) //no payload

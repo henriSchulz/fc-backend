@@ -1,7 +1,18 @@
-import {Request, Response} from "express";
+import {NextFunction, Request, Response} from "express";
 import {isValidUsername} from "../utils";
 import {clientEntityStore, ERROR_PREFIX, LOG_PREFIX} from "../index";
 import bcrypt from "bcrypt";
+import Client from "../types/Client";
+
+
+declare global {
+    namespace Express {
+        interface Request {
+            client?: Client;
+        }
+    }
+}
+
 
 //payload: Client
 export async function createClient(req: Request, res: Response) {
@@ -89,4 +100,27 @@ export async function getUser(req: Request, res: Response) {
     }
 
     res.json({payload: client})
+}
+
+export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
+    try {
+        const authorization = req.header("Authorization");
+        if (!authorization) {
+            return res.sendStatus(401);
+        }
+        const token = authorization.split(" ")[1];
+        if (!token) {
+            return res.sendStatus(401);
+        }
+        const [client, error] = await clientEntityStore.getByToken(token);
+        if (error || !client) {
+            console.log(`${ERROR_PREFIX} ${error}`);
+            return res.sendStatus(401);
+        }
+        req.client = client; // attach the client object to the request object
+        next();
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
 }

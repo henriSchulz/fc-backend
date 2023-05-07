@@ -6,7 +6,7 @@ import {isStack} from "../utils";
 
 //payload: Stack[]
 export async function getAllStacks(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     const [stacks, error] = await stackEntityStore.getAll(client.id)
 
@@ -15,13 +15,13 @@ export async function getAllStacks(req: Request, res: Response) {
         return res.status(500).json({error})
     }
     res.json({
-        payload: stacks
+        payload: stacks ?? []
     })
 }
 
 //payload: Stack
 export async function createStack(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
@@ -44,7 +44,7 @@ export async function createStack(req: Request, res: Response) {
 
 //payload: Stack
 export async function addStack(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
@@ -62,9 +62,10 @@ export async function addStack(req: Request, res: Response) {
     console.log(`${LOG_PREFIX} User(${client.id}) added Stack(${stack.id})`)
     res.json({payload: modifiedStack})
 }
+
 //payload: Stack
 export async function updateStack(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
@@ -72,16 +73,17 @@ export async function updateStack(req: Request, res: Response) {
 
     if (!isStack(stack)) return res.status(422).json({error: `Invalid request Body. Object ${stack} is not typeof Stack`})
     const [modifiedStack, error] = await stackEntityStore.updateStack(client.id, stack)
-    if (error) {
+    if (error || !modifiedStack) {
         console.log(`${ERROR_PREFIX} ${error}`)
         return res.sendStatus(500)
     }
     console.log(`${LOG_PREFIX} User(${client.id}) modified Stack(${modifiedStack!.id})`)
     res.json({payload: modifiedStack})
 }
+
 //no payload
 export async function deleteStack(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     if (!req.body) return res.sendStatus(422)
 

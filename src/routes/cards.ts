@@ -8,7 +8,7 @@ import FieldContent from "../types/FieldContent";
 
 //payload: Card[]
 export async function getAllCards(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     const [cards, error] = await cardEntityStore.getAll(client.id)
 
@@ -21,7 +21,7 @@ export async function getAllCards(req: Request, res: Response) {
 
 //payload: {card: Card, fieldContents: FieldContent[]}
 export async function createCard(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
@@ -45,7 +45,7 @@ export async function createCard(req: Request, res: Response) {
 
 //payload: Card
 export async function addCard(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
@@ -65,7 +65,7 @@ export async function addCard(req: Request, res: Response) {
 
 //no payload
 export async function deleteCard(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
@@ -86,7 +86,7 @@ export async function deleteCard(req: Request, res: Response) {
 
 //payload: {card: Card, fieldContents: FieldContent[]}
 export async function updateCard(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
