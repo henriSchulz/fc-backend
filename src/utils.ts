@@ -3,6 +3,7 @@ import Card from "./types/Card";
 import Field from "./types/Field";
 import CardType from "./types/CardType";
 import FieldContent from "./types/FieldContent";
+import crypto from 'crypto';
 
 export function generateUUID() {
     let d = new Date().getTime();
@@ -188,4 +189,14 @@ export function isArrayOfFields(arr: any): arr is Field[] {
         return false;
     }
     return arr.every(item => isField(item));
+}
+
+export function isValidUsername(input: string): boolean {
+    const regex = /^[a-züäö0-9_.-]+$/i;
+    return regex.test(input);
+}
+
+export function generateSessionToken(length: number = 32): string {
+    const buffer = crypto.randomBytes(length);
+    return buffer.toString('hex');
 }

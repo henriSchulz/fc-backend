@@ -14,7 +14,7 @@ export async function getAllCards(req: Request, res: Response) {
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.status(500).json({error})
+        return res.sendStatus(500)
     }
     res.json({payload: cards})
 }
@@ -29,12 +29,15 @@ export async function createCard(req: Request, res: Response) {
 
     if (!stackId || !cardTypeId || !contents) if (!req.body) return res.status(422).json({error: "Invalid request Body. Missing properties 'stackId', 'cardTypeId' or 'contents'"})
 
-    const [[card, fieldContents], error] = await cardEntityStore.create(client.id, stackId, cardTypeId, contents)
+
+    const [data, error] = await cardEntityStore.create(client.id, stackId, cardTypeId, contents)
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.status(500).json({error})
+        return res.sendStatus(500)
     }
+
+    const [card, fieldContents] = data as [Card, FieldContent[]]
 
     console.log(`${LOG_PREFIX} User(${client.id}) created Card(${card?.id})`)
     res.json({payload: {card, fieldContents}})
@@ -54,7 +57,7 @@ export async function addCard(req: Request, res: Response) {
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.status(500).json({error})
+        return res.sendStatus(500)
     }
     console.log(`${LOG_PREFIX} User(${client.id}) added Card(${card?.id})`)
     res.json({payload: addedCard})
@@ -74,7 +77,7 @@ export async function deleteCard(req: Request, res: Response) {
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.status(500).json({error})
+        return res.sendStatus(500)
     }
 
     console.log(`${LOG_PREFIX} User(${client.id}) deleted Card(${cardId})`)
@@ -93,12 +96,15 @@ export async function updateCard(req: Request, res: Response) {
 
     if (!isArrayOfFieldContent(fieldContents)) return res.status(422).json({error: `Invalid request Body. Object ${card} is not typeof FieldContent[]`})
 
-    const [[updatedCard, updatedFieldContents], error] = await cardEntityStore.update(client.id, card, fieldContents as FieldContent[])
+    const [data, error] = await cardEntityStore.update(client.id, card, fieldContents as FieldContent[])
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
         return res.sendStatus(500)
     }
+
+    const [updatedCard, updatedFieldContents] = data as [Card, FieldContent[]]
+
     console.log(`${LOG_PREFIX} User(${client.id}) modified Card(${card?.id})`)
     res.json({
         payload: {card: updatedCard, fieldContents: updatedFieldContents}

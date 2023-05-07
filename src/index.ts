@@ -12,6 +12,10 @@ import {addCard, createCard, deleteCard, getAllCards, updateCard} from "./routes
 import {addCardType, createCardType, deleteCardType, getAllCardTypes, updateCardType} from "./routes/cardTypes";
 import {getAllFields} from "./routes/fields";
 import {getAllFieldContents} from "./routes/FieldContents";
+import exp from "constants";
+import ClientEntityStore from "./stores/ClientEntityStore";
+import {createClient, getUser, login, logout} from "./routes/auth";
+import {log} from "util";
 
 
 export const VERSION = 1
@@ -28,6 +32,7 @@ export const cardEntityStore = new CardEntityStore(database)
 export const fieldEntityStore = new FieldEntityStore(database)
 export const fieldContentEntityStore = new FieldContentEntityStore(database)
 export const cardTypeEntityStore = new CardTypeEntityStore(database)
+export const clientEntityStore = new ClientEntityStore(database)
 
 
 const app = express();
@@ -60,6 +65,13 @@ app.get(`${DEFAULT_ROUTE}/${fieldEntityStore.uniqueId}`, getAllFields) //payload
 
 //fieldContentRoutes
 app.get(`${DEFAULT_ROUTE}/${fieldContentEntityStore.uniqueId}`, getAllFieldContents) //payload: FieldContent[]
+
+//auth routes
+
+app.post(`${DEFAULT_ROUTE}/${clientEntityStore.uniqueId}/signup`, createClient) //payload: Client
+app.post(`${DEFAULT_ROUTE}/${clientEntityStore.uniqueId}/login`, login) //payload: Client
+app.delete(`${DEFAULT_ROUTE}/${clientEntityStore.uniqueId}`, logout) //no payload
+app.get(`${DEFAULT_ROUTE}/${clientEntityStore.uniqueId}`, getUser) //payload: Client
 
 
 const port = process.env.PORT || 4000;

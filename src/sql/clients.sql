@@ -3,10 +3,7 @@ CREATE TABLE IF NOT EXISTS clients (
     createdAt TIMESTAMP NOT NULL,
     lastModifiedAt TIMESTAMP NOT NULL,
     version INTEGER NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    firstName VARCHAR(100) NOT NULL,
-    lastName VARCHAR(100) NOT NULL,
     userName VARCHAR(20) NOT NULL,
     hash VARCHAR(200) NOT NULL,
-    token VARCHAR(200) NOT NULL
+    token VARCHAR(200)
 )

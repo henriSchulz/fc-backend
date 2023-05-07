@@ -33,7 +33,7 @@ export async function createStack(req: Request, res: Response) {
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.status(500).json({error})
+        return res.sendStatus(500)
     }
 
     console.log(`${LOG_PREFIX} User(${client.id}) created Stack(${stack?.id})`)
@@ -56,7 +56,7 @@ export async function addStack(req: Request, res: Response) {
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.status(500).json({error})
+        return res.sendStatus(500)
     }
 
     console.log(`${LOG_PREFIX} User(${client.id}) added Stack(${stack.id})`)
@@ -74,7 +74,7 @@ export async function updateStack(req: Request, res: Response) {
     const [modifiedStack, error] = await stackEntityStore.updateStack(client.id, stack)
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.status(500).json({error})
+        return res.sendStatus(500)
     }
     console.log(`${LOG_PREFIX} User(${client.id}) modified Stack(${modifiedStack!.id})`)
     res.json({payload: modifiedStack})
@@ -93,7 +93,7 @@ export async function deleteStack(req: Request, res: Response) {
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.status(500).json({error})
+        return res.sendStatus(500)
     }
 
     console.log(`${LOG_PREFIX} User(${client.id}) deleted Stack(${stackId})`)

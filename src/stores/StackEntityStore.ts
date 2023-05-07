@@ -88,12 +88,12 @@ export default class StackEntityStore {
     updateStack(clientId: string, stack: Stack): Promise<DefaultResponse<Stack>> {
         return new Promise((resolve) => {
             const {version, createdAt, id, ...newStack} = stack
-            const {newName} = newStack
+            const {name} = newStack
             const lastModifiedAt = Date.now()
 
             this.database.run(
                 'UPDATE stacks SET name = ?, lastModifiedAt = ? WHERE id = ? AND clientId = ?',
-                [newName, lastModifiedAt, id, clientId],
+                [name, lastModifiedAt, id, clientId],
                 (err) => {
                     if (err) {
                         resolve([null, String(err)])

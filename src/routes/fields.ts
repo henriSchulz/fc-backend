@@ -11,7 +11,7 @@ export async function getAllFields(req: Request, res: Response) {
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.status(500).json({error})
+        return res.sendStatus(500)
     }
 
     res.json({payload: fields})
