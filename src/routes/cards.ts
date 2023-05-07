@@ -16,7 +16,7 @@ export async function getAllCards(req: Request, res: Response) {
         console.log(`${ERROR_PREFIX} ${error}`)
         return res.status(500).json({error})
     }
-    res.json(cards)
+    res.json({payload: cards})
 }
 
 //payload: {card: Card, fieldContents: FieldContent[]}

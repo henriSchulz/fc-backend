@@ -7,10 +7,11 @@ import CardEntityStore from "./stores/CardEntityStore";
 import FieldContentEntityStore from "./stores/FieldContentEntityStore";
 import FieldEntityStore from "./stores/FieldEntityStore";
 import CardTypeEntityStore from "./stores/CardTypeEntityStore";
-import Client from "./types/Client";
 import {addStack, createStack, deleteStack, getAllStacks, updateStack} from "./routes/stacks";
 import {addCard, createCard, deleteCard, getAllCards, updateCard} from "./routes/cards";
 import {addCardType, createCardType, deleteCardType, getAllCardTypes, updateCardType} from "./routes/cardTypes";
+import {getAllFields} from "./routes/fields";
+import {getAllFieldContents} from "./routes/FieldContents";
 
 
 export const VERSION = 1
@@ -34,25 +35,31 @@ const app = express();
 app.use(express.json())
 
 //stack routes
-app.get(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}`, getAllStacks)
-app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/create`, createStack)
-app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/add`, addStack)
-app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/update`, updateStack)
-app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/delete`, deleteStack)
+app.get(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}`, getAllStacks) //payload: Stack[]
+app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/create`, createStack) //payload: Stack
+app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/add`, addStack) //payload: Stack
+app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/update`, updateStack) //payload: Stack
+app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/delete`, deleteStack) //no payload
 
 //card routes
-app.get(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}`, getAllCards)
-app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/create`, createCard)
-app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/add`, addCard)
-app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/update`, updateCard)
-app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/delete`, deleteCard)
+app.get(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}`, getAllCards) //payload: Card[]
+app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/create`, createCard) //payload: {card: Card, fieldContents: FieldContent[]}
+app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/add`, addCard) //payload: Card
+app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/update`, updateCard)  //payload: {card: Card, fieldContents: FieldContent[]}
+app.post(`${DEFAULT_ROUTE}/${cardEntityStore.uniqueId}/delete`, deleteCard) //no payload
 
 //cardType routes
-app.get(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}`, getAllCardTypes)
-app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/create`, createCardType)
-app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/add`, addCardType)
-app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/update`, updateCardType)
-app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/delete`, deleteCardType)
+app.get(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}`, getAllCardTypes) //payload: CardType[]
+app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/create`, createCardType) //payload: {cardType: CardType, fields: Field[]}
+app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/add`, addCardType) //payload: CardType[]
+app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/update`, updateCardType) //no payload
+app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/delete`, deleteCardType) //payload: {cardType: CardType, fields: Field[]}
+
+//fieldRoutes
+app.get(`${DEFAULT_ROUTE}/${fieldEntityStore.uniqueId}`, getAllFields) //payload: Field[]
+
+//fieldContentRoutes
+app.get(`${DEFAULT_ROUTE}/${fieldContentEntityStore.uniqueId}`, getAllFieldContents) //payload: FieldContent[]
 
 
 const port = process.env.PORT || 4000;

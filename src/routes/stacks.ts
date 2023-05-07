@@ -4,7 +4,7 @@ import {ERROR_PREFIX, LOG_PREFIX, stackEntityStore} from "../index";
 import Stack from "../types/Stack";
 import {isStack} from "../utils";
 
-
+//payload: Stack[]
 export async function getAllStacks(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
 
@@ -19,6 +19,7 @@ export async function getAllStacks(req: Request, res: Response) {
     })
 }
 
+//payload: Stack
 export async function createStack(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
 
@@ -41,6 +42,7 @@ export async function createStack(req: Request, res: Response) {
     })
 }
 
+//payload: Stack
 export async function addStack(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
 
@@ -60,7 +62,7 @@ export async function addStack(req: Request, res: Response) {
     console.log(`${LOG_PREFIX} User(${client.id}) added Stack(${stack.id})`)
     res.json({payload: modifiedStack})
 }
-
+//payload: Stack
 export async function updateStack(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
 
@@ -77,7 +79,7 @@ export async function updateStack(req: Request, res: Response) {
     console.log(`${LOG_PREFIX} User(${client.id}) modified Stack(${modifiedStack!.id})`)
     res.json({payload: modifiedStack})
 }
-
+//no payload
 export async function deleteStack(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
 
