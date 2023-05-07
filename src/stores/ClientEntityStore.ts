@@ -4,7 +4,6 @@ import {generateModelId, generateSessionToken} from "../utils";
 import bcrypt from "bcrypt"
 import {DefaultResponse} from "../types/responses/DefaultResponse";
 import Client from "../types/Client";
-import e from "express";
 
 export default class ClientEntityStore {
     private readonly database: Database

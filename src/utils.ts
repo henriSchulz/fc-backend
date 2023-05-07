@@ -121,10 +121,10 @@ const BASE_MODEL_KEYS = ['id', 'createdAt', 'lastModifiedAt', 'version'];
 export function isStack(obj: any): obj is Stack {
     return !(obj === null ||
         typeof obj !== 'object' ||
-        typeof isId(obj.id) ||
+        !isId(obj.id) ||
         typeof obj.lastModifiedAt !== 'number' ||
         typeof obj.version !== 'number' ||
-        typeof isId(obj.clientId) ||
+        !isId(obj.clientId) ||
         typeof obj.name !== 'string');
 }
 

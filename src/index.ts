@@ -15,7 +15,7 @@ import {getAllFieldContents} from "./routes/FieldContents";
 import exp from "constants";
 import ClientEntityStore from "./stores/ClientEntityStore";
 import {authMiddleware, createClient, getUser, login, logout} from "./routes/auth";
-import {log} from "util";
+import cors from "cors"
 
 
 export const VERSION = 1
@@ -38,6 +38,9 @@ export const clientEntityStore = new ClientEntityStore(database)
 const app = express();
 
 app.use(express.json())
+app.use(cors({
+    origin: "http://localhost:3000"
+}));
 
 
 //stack routes
