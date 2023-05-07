@@ -1,3 +1,9 @@
+import Stack from "./types/Stack";
+import Card from "./types/Card";
+import Field from "./types/Field";
+import CardType from "./types/CardType";
+import FieldContent from "./types/FieldContent";
+
 export function generateUUID() {
     let d = new Date().getTime();
     let d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;
@@ -17,8 +23,6 @@ export function generateUUID() {
 export function generateModelId(): string {
     return generateUUID().split("-")[0]
 }
-
-
 
 
 export function numberArray(from: number, to: number) {
@@ -105,4 +109,83 @@ export function createDownload(name: string, content: string): void {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(fileUrl);
+}
+
+function isId(str: any): boolean {
+    return typeof str === 'string' && str.length === 8
+}
+
+const BASE_MODEL_KEYS = ['id', 'createdAt', 'lastModifiedAt', 'version'];
+
+export function isStack(obj: any): obj is Stack {
+    return !(obj === null ||
+        typeof obj !== 'object' ||
+        typeof isId(obj.id) ||
+        typeof obj.lastModifiedAt !== 'number' ||
+        typeof obj.version !== 'number' ||
+        typeof isId(obj.clientId) ||
+        typeof obj.name !== 'string');
+}
+
+export function isCard(obj: any): obj is Card {
+    return !(typeof obj !== 'object' ||
+        obj === null ||
+        !isId(obj.id) ||
+        !isId(obj.cardTypeId) ||
+        typeof obj.createdAt !== 'number' ||
+        typeof obj.lastModifiedAt !== 'number' ||
+        typeof obj.version !== 'number' ||
+        typeof obj.dueAt !== 'number' ||
+        typeof obj.learningState !== 'number' ||
+        typeof obj.paused !== 'boolean');
+}
+
+export function isField(obj: any): obj is Field {
+    return !(typeof obj !== 'object' ||
+        obj === null ||
+        !isId(obj.id) ||
+        !isId(obj.cardTypeId) ||
+        typeof obj.createdAt !== 'number' ||
+        typeof obj.lastModifiedAt !== 'number' ||
+        typeof obj.version !== 'number' ||
+        typeof obj.name !== 'string');
+}
+
+export function isCardType(obj: any): obj is CardType {
+    return !(typeof obj !== 'object' ||
+        obj === null ||
+        !isId(obj.id) ||
+        typeof obj.createdAt !== 'number' ||
+        typeof obj.lastModifiedAt !== 'number' ||
+        typeof obj.version !== 'number' ||
+        typeof obj.name !== 'string' ||
+        typeof obj.templateFront !== 'string' ||
+        typeof obj.templateBack !== 'string');
+}
+
+export function isFieldContent(obj: any): obj is FieldContent {
+    return !(typeof obj !== 'object' ||
+        obj === null ||
+        !isId(obj.id) ||
+        typeof obj.createdAt !== 'number' ||
+        typeof obj.lastModifiedAt !== 'number' ||
+        typeof obj.version !== 'number' ||
+        typeof obj.fieldId !== 'string' ||
+        typeof obj.cardId !== 'string' ||
+        typeof obj.stackId !== 'string' ||
+        typeof obj.content !== 'string');
+}
+
+export function isArrayOfFieldContent(arr: any): arr is FieldContent[] {
+    if (!Array.isArray(arr)) {
+        return false;
+    }
+    return arr.every(item => isFieldContent(item));
+}
+
+export function isArrayOfFields(arr: any): arr is Field[] {
+    if (!Array.isArray(arr)) {
+        return false;
+    }
+    return arr.every(item => isField(item));
 }

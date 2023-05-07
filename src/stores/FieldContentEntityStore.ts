@@ -14,18 +14,18 @@ export default class FieldContentEntityStore {
         this.uniqueId = "aabfcb48-b452-4919-a0a1-51e3c573de81"
     }
 
-    add(clientId: string, fieldContent: FieldContent): Promise<DefaultResponse<null>> {
+    add(clientId: string, fieldContent: FieldContent): Promise<DefaultResponse<FieldContent>> {
         const {id, createdAt, version, fieldId, cardId, stackId, content} = fieldContent;
         const lastModifiedAt = Date.now()
         return new Promise((resolve) => {
             this.database.run(
-                'INSERT INTO fieldContents (id, created_at, last_modified_at, version, field_id, card_id, stack_id, client_id, content) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO fieldContents (id, createdAt, lastModifiedAt, version, fieldId, cardId, stackId, clientId, content) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [id, createdAt, lastModifiedAt, version, fieldId, cardId, stackId, clientId, content],
                 err => {
                     if (err) {
                         resolve([null, String(err)]);
                     } else {
-                        resolve([null, null]);
+                        resolve([{...fieldContent, lastModifiedAt, clientId}, null]);
                     }
                 }
             );
@@ -36,7 +36,7 @@ export default class FieldContentEntityStore {
     getAll(clientId: string): Promise<DefaultResponse<FieldContent[]>> {
         return new Promise((resolve) => {
             this.database.all(
-                'SELECT * FROM fieldContents WHERE client_id = ?',
+                'SELECT * FROM fieldContents WHERE clientId = ?',
                 [clientId],
                 (err, rows: FieldContent[]) => {
                     if (err) {
@@ -69,7 +69,7 @@ export default class FieldContentEntityStore {
 
         return new Promise((resolve) => {
             this.database.run(
-                'INSERT INTO fieldContents (id, created_at, last_modified_at, version, field_id, card_id, stack_id, client_id, content) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)',
+                'INSERT INTO fieldContents (id, createdAt, lastModifiedAt, version, fieldId, cardId, stackId, clientId, content) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)',
                 [
                     id,
                     createdAt,
@@ -95,7 +95,7 @@ export default class FieldContentEntityStore {
     delete(clientId: string, fieldContentId: string): Promise<DefaultResponse<null>> {
         return new Promise((resolve) => {
             this.database.run(
-                'DELETE FROM fieldContents WHERE id = ? AND client_id = ?',
+                'DELETE FROM fieldContents WHERE id = ? AND clientId = ?',
                 [fieldContentId, clientId],
                 (err) => {
                     if (err) {
@@ -111,7 +111,7 @@ export default class FieldContentEntityStore {
     deleteByCard(clientId: string, cardId: string): Promise<DefaultResponse<null>> {
         return new Promise((resolve) => {
             this.database.run(
-                'DELETE FROM fieldContents WHERE card_id = ? AND client_id = ?',
+                'DELETE FROM fieldContents WHERE cardId = ? AND clientId = ?',
                 [cardId, clientId],
                 (err) => {
                     if (err) {
@@ -124,22 +124,27 @@ export default class FieldContentEntityStore {
         });
     }
 
-    update(clientId: string, fieldContent: FieldContent): Promise<DefaultResponse<null>> {
-        const {id: fieldContentId, ...newFieldContent} = fieldContent;
+    update(clientId: string, fieldContent: FieldContent): Promise<DefaultResponse<FieldContent>> {
+        const {id: fieldContentId, createdAt, stackId, cardId, fieldId, version, ...newFieldContent} = fieldContent;
         return new Promise((resolve) => {
             const {content} = newFieldContent;
             const lastModifiedAt = Date.now();
+
+            const updatedFieldContent: FieldContent = {
+                ...fieldContent, lastModifiedAt, clientId
+            }
+
             this.database.run(`UPDATE fieldContents
-                               SET content          = ?,
-                                   last_modified_at = ?
+                               SET content        = ?,
+                                   lastModifiedAt = ?
                                WHERE id = ?
-                                 AND client_id = ?`,
+                                 AND clientId = ?`,
                 [content, lastModifiedAt, fieldContentId, clientId],
                 (err) => {
                     if (err) {
                         resolve([null, String(err)]);
                     } else {
-                        resolve([null, null]);
+                        resolve([updatedFieldContent, null]);
                     }
                 }
             );

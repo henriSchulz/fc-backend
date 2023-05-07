@@ -14,18 +14,18 @@ export default class FieldEntityStore {
         this.uniqueId = "bf629b15-e95b-4b52-8571-3e5550e47ee8"
     }
 
-    add(clientId: string, field: Field): Promise<DefaultResponse<null>> {
+    add(clientId: string, field: Field): Promise<DefaultResponse<Field>> {
         const {id, createdAt, version, name, cardTypeId} = field;
         const lastModifiedAt = Date.now()
         return new Promise((resolve) => {
             this.database.run(
-                'INSERT INTO fields (id, created_at, last_modified_at, version, name, card_type_id, client_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO fields (id, createdAt, lastModifiedAt, version, name, cardTypeId, clientId) VALUES (?, ?, ?, ?, ?, ?, ?)',
                 [id, createdAt, lastModifiedAt, version, name, cardTypeId, clientId],
                 err => {
                     if (err) {
                         resolve([null, String(err)]);
                     } else {
-                        resolve([null, null]);
+                        resolve([{...field, lastModifiedAt, clientId}, null]);
                     }
                 }
             );
@@ -35,7 +35,7 @@ export default class FieldEntityStore {
     getAll(clientId: string): Promise<DefaultResponse<Field[]>> {
         return new Promise((resolve) => {
             this.database.all(
-                'SELECT * FROM fields WHERE client_id = ?',
+                'SELECT * FROM fields WHERE clientId = ?',
                 [clientId],
                 (err, rows: Field[]) => {
                     if (err) {
@@ -51,7 +51,7 @@ export default class FieldEntityStore {
     getAllByCardType(clientId: string, cardTypeId: string): Promise<DefaultResponse<Field[]>> {
         return new Promise((resolve) => {
             this.database.all(
-                'SELECT * FROM fields WHERE client_id = ? AND card_type_id = ?',
+                'SELECT * FROM fields WHERE clientId = ? AND cardTypeId = ?',
                 [clientId, cardTypeId],
                 (err, rows: Field[]) => {
                     if (err) {
@@ -82,7 +82,7 @@ export default class FieldEntityStore {
 
         return new Promise((resolve) => {
             this.database.run(
-                'INSERT INTO fields (id, created_at, last_modified_at, version, name, card_type_id, client_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO fields (id, createdAt, lastModifiedAt, version, name, cardTypeId, clientId) VALUES (?, ?, ?, ?, ?, ?, ?)',
                 [
                     id,
                     createdAt,
@@ -106,7 +106,7 @@ export default class FieldEntityStore {
     delete(clientId: string, cardTypeId: string, fieldId: string): Promise<DefaultResponse<null>> {
         return new Promise((resolve) => {
             this.database.run(
-                'DELETE FROM fields WHERE id = ? AND card_type_id = ? AND client_id = ?',
+                'DELETE FROM fields WHERE id = ? AND cardTypeId = ? AND clientId = ?',
                 [fieldId, cardTypeId, clientId],
                 (err) => {
                     if (err) {
@@ -122,7 +122,7 @@ export default class FieldEntityStore {
     deleteByCardTypeId(clientId: string, cardTypeId: string): Promise<DefaultResponse<null>> {
         return new Promise((resolve) => {
             this.database.run(
-                'DELETE FROM fields card_type_id = ? AND client_id = ?',
+                'DELETE FROM fields cardTypeId = ? AND clientId = ?',
                 [cardTypeId, clientId],
                 (err) => {
                     if (err) {
@@ -136,25 +136,24 @@ export default class FieldEntityStore {
     }
 
 
-
-    update(clientId: string, field: Field): Promise<DefaultResponse<null>> {
+    update(clientId: string, field: Field): Promise<DefaultResponse<Field>> {
         const {id: fieldId, cardTypeId, ...newField} = field;
         return new Promise((resolve) => {
             const {name} = newField;
             const lastModifiedAt = Date.now();
             this.database.run(
                 `UPDATE fields
-                 SET name             = ?,
-                     last_modified_at = ?
+                 SET name           = ?,
+                     lastModifiedAt = ?
                  WHERE id = ?
-                   AND card_type_id = ?
-                   AND client_id = ?`,
+                   AND cardTypeId = ?
+                   AND clientId = ?`,
                 [name, lastModifiedAt, fieldId, cardTypeId, clientId],
                 (err) => {
                     if (err) {
                         resolve([null, String(err)]);
                     } else {
-                        resolve([null, null]);
+                        resolve([{...field, lastModifiedAt, clientId}, null]);
                     }
                 }
             );

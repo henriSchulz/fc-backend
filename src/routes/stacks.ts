@@ -2,6 +2,7 @@ import {Request, Response} from "express";
 import Client from "../types/Client";
 import {ERROR_PREFIX, LOG_PREFIX, stackEntityStore} from "../index";
 import Stack from "../types/Stack";
+import {isStack} from "../utils";
 
 
 export async function getAllStacks(req: Request, res: Response) {
@@ -11,71 +12,70 @@ export async function getAllStacks(req: Request, res: Response) {
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.sendStatus(500)
+        return res.status(500).json({error})
     }
-    res.json(stacks)
+    res.json({
+        payload: stacks
+    })
 }
 
 export async function createStack(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
 
-    if (!req.body) return res.sendStatus(422)
+    if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
     const {name} = req.body
 
-    if (!name) return res.sendStatus(422)
+    if (!name) return res.status(422).json({error: "Invalid request Body. Property 'name' is missing"})
 
     const [stack, error] = await stackEntityStore.create(client.id, name)
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.sendStatus(500)
+        return res.status(500).json({error})
     }
 
     console.log(`${LOG_PREFIX} User(${client.id}) created Stack(${stack?.id})`)
-    res.json(stack)
+    res.json({
+        payload: stack
+    })
 }
 
 export async function addStack(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
 
-    if (!req.body) return res.sendStatus(422)
+    if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
     const stack: Stack = req.body["stack"]
 
-    if (!stack) return res.sendStatus(422)
-    if (!stack.id || !stack.name || !stack.clientId ||
-        !stack.version || !stack.createdAt || !stack.lastModifiedAt) res.sendStatus(422)
+    if (!isStack(stack)) return res.status(422).json({error: `Invalid request Body. Object ${stack} is not typeof Stack`})
 
-    const [_, error] = await stackEntityStore.add(client.id, stack)
+    const [modifiedStack, error] = await stackEntityStore.add(client.id, stack)
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.sendStatus(500)
+        return res.status(500).json({error})
     }
 
     console.log(`${LOG_PREFIX} User(${client.id}) added Stack(${stack.id})`)
-    res.sendStatus(200)
+    res.json({payload: modifiedStack})
 }
 
 export async function updateStack(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
-    if (!req.body) return res.sendStatus(422)
 
-    const {name: newStackName, id: stackId} = req.body
+    if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
+    const {stack} = req.body
 
-    if (!stackId || !newStackName) return res.sendStatus(422)
-
-    const [_, error] = await stackEntityStore.updateStackName(client.id, stackId, newStackName)
-
+    if (!isStack(stack)) return res.status(422).json({error: `Invalid request Body. Object ${stack} is not typeof Stack`})
+    const [modifiedStack, error] = await stackEntityStore.updateStack(client.id, stack)
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.sendStatus(500)
+        return res.status(500).json({error})
     }
-
-    console.log(`${LOG_PREFIX} User(${client.id}) modified Stack(${stackId})`)
-    res.sendStatus(200)
+    console.log(`${LOG_PREFIX} User(${client.id}) modified Stack(${modifiedStack!.id})`)
+    res.json({payload: modifiedStack})
 }
 
 export async function deleteStack(req: Request, res: Response) {
@@ -91,7 +91,7 @@ export async function deleteStack(req: Request, res: Response) {
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.sendStatus(500)
+        return res.status(500).json({error})
     }
 
     console.log(`${LOG_PREFIX} User(${client.id}) deleted Stack(${stackId})`)

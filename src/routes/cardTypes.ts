@@ -3,8 +3,9 @@ import Client from "../types/Client";
 import {cardTypeEntityStore, ERROR_PREFIX, LOG_PREFIX} from "../index";
 import CardType from "../types/CardType";
 import Field from "../types/Field";
+import {isArrayOfFields, isCardType} from "../utils";
 
-
+//payload: CardType[]
 export async function getAllCardTypes(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
 
@@ -12,75 +13,82 @@ export async function getAllCardTypes(req: Request, res: Response) {
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.sendStatus(500)
+        return res.status(500).json({error})
     }
 
-    res.json(cardTypes)
+    res.json({
+        payload: cardTypes
+    })
 }
 
+//payload: {cardType: CardType, fields: Field[]}
 export async function createCardType(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
 
-    if (!req.body) return res.sendStatus(422)
+    if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
     const {name, templateFront, templateBack, fieldNames} = req.body
 
-    if (!name || !templateFront || !templateBack || !fieldNames) return res.sendStatus(422)
+    if (!name || !templateFront || !templateBack || !fieldNames)
+        return res.status(422).json({error: "Invalid request Body. Missing properties 'name', 'templateFront', 'fieldNames' or 'contents'"})
 
     const [[cardType, fields], error] = await cardTypeEntityStore.create(client.id, name, templateFront, templateBack, fieldNames)
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.sendStatus(500)
+        return res.status(500).json({error})
     }
 
-    res.json({cardType, fields})
+    res.json({payload: {cardType, fields}})
     console.log(`${LOG_PREFIX} User(${client.id}) created CardType(${cardType?.id})`)
 }
 
+//payload: CardType[]
 export async function addCardType(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
-    if (!req.body) return res.sendStatus(422)
+    if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
     const cardType: CardType = req.body.cardType
 
-    //Todo: Check if all cardType properties has sent
 
-    if (!cardType) return res.sendStatus(422)
+    if (!isCardType(cardType)) return res.status(422).json({error: `Invalid request Body. Object ${cardType} is not typeof CardType`})
 
-    const [_, error] = await cardTypeEntityStore.add(client.id, cardType)
+    const [addedCardType, error] = await cardTypeEntityStore.add(client.id, cardType)
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.sendStatus(500)
+        return res.status(500).json({error})
     }
     console.log(`${LOG_PREFIX} User(${client.id}) added CardType(${cardType?.id})`)
-    res.sendStatus(200)
+    res.json({payload: addedCardType})
 }
 
+//payload: {cardType: CardType, fields: Field[]}
 export async function updateCardType(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
-    if (!req.body) return res.sendStatus(422)
+    if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
     const cardType: CardType = req.body.cardType
     const fields: Field[] = req.body.fields
 
-    //Todo: Check if all cardType properties has sent
+    if (!isCardType(cardType)) return res.status(422).json({error: `Invalid request Body. Object ${cardType} is not typeof CardType`})
+    if (!isArrayOfFields(fields)) return res.status(422).json({error: `Invalid request Body. Object ${cardType} is not typeof Field[]`})
 
-    if (!cardType || !fields) return res.sendStatus(422)
-
-    const [_, error] = await cardTypeEntityStore.update(client.id, cardType, fields)
+    const [[modifiedCardType, modifiedFields], error] = await cardTypeEntityStore.update(client.id, cardType, fields)
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.sendStatus(500)
+        return res.status(500).json({error})
     }
     console.log(`${LOG_PREFIX} User(${client.id}) modified CardType(${cardType?.id})`)
-    res.sendStatus(200)
+    res.json({
+        payload: {cardType: modifiedCardType, field: modifiedFields}
+    })
 }
 
+//no payload
 export async function deleteCardType(req: Request, res: Response) {
     const client: Client = {id: "11111111"} as Client //later imported using middleware
-    if (!req.body) return res.sendStatus(422)
+    if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
     const {id: cardTypeId} = req.body
 
@@ -89,7 +97,7 @@ export async function deleteCardType(req: Request, res: Response) {
     const [_, error] = await cardTypeEntityStore.delete(client.id, cardTypeId)
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
-        return res.sendStatus(500)
+        return res.status(500).json({error})
     }
     console.log(`${LOG_PREFIX} User(${client.id}) deleted CardType(${cardTypeId})`)
     res.sendStatus(200)

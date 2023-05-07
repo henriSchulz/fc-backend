@@ -16,12 +16,13 @@ export default class CardEntityStore {
         this.uniqueId = "cbeeab63-87f1-4f41-b114-89588f59c8ed"
     }
 
-    add(clientId: string, card: Card): Promise<DefaultResponse<null>> {
+    add(clientId: string, card: Card): Promise<DefaultResponse<Card>> {
         const {id, createdAt, version, stackId, cardTypeId, dueAt, learningState, paused} = card;
         const lastModifiedAt = Date.now()
+        const addedCard: Card = {...card, lastModifiedAt, clientId}
         return new Promise((resolve) => {
             this.database.run(
-                'INSERT INTO cards (id, created_at, last_modified_at, version, client_id, stack_id, card_type_id, due_at, learning_state, paused) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO cards (id, createdAt, lastModifiedAt, version, clientId, stackId, cardTypeId, dueAt, learningState, paused) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [
                     id,
                     createdAt,
@@ -38,7 +39,7 @@ export default class CardEntityStore {
                     if (err) {
                         resolve([null, String(err)])
                     } else {
-                        resolve([null, null])
+                        resolve([addedCard, null])
                     }
                 }
             )
@@ -46,7 +47,7 @@ export default class CardEntityStore {
     }
 
     getAll(clientId: string): Promise<DefaultResponse<Card[]>> {
-        return new Promise((resolve) => this.database.all("SELECT * FROM cards WHERE client_id = ?", [clientId], (err, rows: Card[]) => {
+        return new Promise((resolve) => this.database.all("SELECT * FROM cards WHERE clientId = ?", [clientId], (err, rows: Card[]) => {
             if (err) {
                 resolve([
                     null, String(err)
@@ -60,7 +61,7 @@ export default class CardEntityStore {
     getAllByStackId(stackId: string, clientId: string): Promise<DefaultResponse<Card[]>> {
         return new Promise((resolve) => {
             this.database.all(
-                "SELECT * FROM cards WHERE stack_id = ? AND client_id = ?",
+                "SELECT * FROM cards WHERE stackId = ? AND clientId = ?",
                 [stackId, clientId],
                 (err, rows: Card[]) => {
                     if (err) {
@@ -98,7 +99,7 @@ export default class CardEntityStore {
                 paused: paused as unknown as boolean
             }
             this.database.run(
-                'INSERT INTO cards (id, created_at, last_modified_at, version ,client_id, stack_id, card_type_id, due_at, learning_state, paused) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO cards (id, createdAt, lastModifiedAt, version ,clientId, stackId, card_typeId, dueAt, learningState, paused) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [
                     id,
                     createdAt,
@@ -141,7 +142,7 @@ export default class CardEntityStore {
 
         const [_, error] = await new Promise<DefaultResponse<null>>((resolve) => {
             this.database.run(
-                'DELETE FROM cards WHERE id = ? AND client_id = ?',
+                'DELETE FROM cards WHERE id = ? AND clientId = ?',
                 [cardId, clientId],
                 (err) => {
                     if (err) {
@@ -163,19 +164,24 @@ export default class CardEntityStore {
 
     }
 
-    async update(clientId: string, card: Card, fieldContents: FieldContent[]): Promise<DefaultResponse<null>> {
-        const {id: cardId, ...newCard} = card;
-        const [_, error] = await new Promise<DefaultResponse<null>>((resolve) => {
+    async update(clientId: string, card: Card, fieldContents: FieldContent[]): Promise<DefaultResponse<[Card, FieldContent[]]>> {
+        const {id: cardId, version, createdAt, ...newCard} = card;
+        const [updatedCard, error] = await new Promise<DefaultResponse<Card>>((resolve) => {
             const {dueAt, learningState, paused} = newCard;
             const lastModifiedAt = Date.now();
+
+            const updatedCard: Card = {
+                ...card, lastModifiedAt, clientId
+            }
+
             this.database.run(
                 `UPDATE cards
-                 SET due_at           = ?,
-                     learning_state   = ?,
-                     paused           = ?,
-                     last_modified_at = ?
+                 SET dueAt          = ?,
+                     learningState  = ?,
+                     paused         = ?,
+                     lastModifiedAt = ?
                  WHERE id = ?
-                   AND client_id = ?`,
+                   AND clientId = ?`,
                 [
                     dueAt,
                     learningState,
@@ -188,7 +194,7 @@ export default class CardEntityStore {
                     if (err) {
                         resolve([null, String(err)]);
                     } else {
-                        resolve([null, null]);
+                        resolve([updatedCard, null]);
                     }
                 }
             );
@@ -196,10 +202,13 @@ export default class CardEntityStore {
         if (error) {
             return [null, error]
         }
+        const updatedFieldContents: FieldContent[] = []
+
         for (const fieldContent of fieldContents) {
-            const [__, _error] = await fieldContentEntityStore.update(clientId, fieldContent)
+            const [updatedFieldContent, _error] = await fieldContentEntityStore.update(clientId, fieldContent)
             if (_error) return [null, _error]
+            updatedFieldContents.push(updatedFieldContent!)
         }
-        return [null, null]
+        return [[updatedCard!, updatedFieldContents], null]
     }
 }

@@ -16,18 +16,18 @@ export default class CardTypeEntityStore {
         this.uniqueId = "8cd6cae3-8486-4136-8e34-b59279b7b6bd"
     }
 
-    add(clientId: string, cardType: CardType): Promise<DefaultResponse<null>> {
+    add(clientId: string, cardType: CardType): Promise<DefaultResponse<CardType>> {
         const {id, createdAt, version, name, templateFront, templateBack} = cardType;
         const lastModifiedAt = Date.now()
         return new Promise((resolve) => {
             this.database.run(
-                'INSERT INTO card_types (id, created_at, last_modified_at, version, client_id, name, template_front, template_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO card_types (id, createdAt, lastModifiedAt, version, clientId, name, templateFront, templateBack) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                 [id, createdAt, lastModifiedAt, version, clientId, name, templateFront, templateBack],
                 err => {
                     if (err) {
                         resolve([null, String(err)]);
                     } else {
-                        resolve([null, null]);
+                        resolve([{...cardType, clientId, lastModifiedAt}, null]);
                     }
                 }
             );
@@ -38,7 +38,7 @@ export default class CardTypeEntityStore {
     getAll(clientId: string): Promise<DefaultResponse<CardType[]>> {
         return new Promise((resolve) => {
             this.database.all(
-                'SELECT * FROM card_types WHERE client_id = ?',
+                'SELECT * FROM card_types WHERE clientId = ?',
                 [clientId],
                 (err, rows: CardType[]) => {
                     if (err) {
@@ -71,7 +71,7 @@ export default class CardTypeEntityStore {
             };
 
             this.database.run(
-                'INSERT INTO card_types (id, created_at, last_modified_at, version, client_id, name, template_front, template_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO card_types (id, createdAt, lastModifiedAt, version, clientId, name, templateFront, templateBack) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                 [
                     id,
                     createdAt,
@@ -108,7 +108,7 @@ export default class CardTypeEntityStore {
     async delete(clientId: string, cardTypeId: string): Promise<DefaultResponse<null>> {
         const [_, error] = await new Promise<DefaultResponse<null>>((resolve) => {
             this.database.run(
-                'DELETE FROM card_types WHERE id = ? AND client_id = ?',
+                'DELETE FROM card_types WHERE id = ? AND clientId = ?',
                 [cardTypeId, clientId],
                 (err) => {
                     if (err) {
@@ -122,30 +122,30 @@ export default class CardTypeEntityStore {
         if (error) return [null, error]
         const [__, _error] = await fieldEntityStore.deleteByCardTypeId(clientId, cardTypeId)
 
-        if(_error) return [null, _error]
+        if (_error) return [null, _error]
 
         return [null, null]
     }
 
-    async update(clientId: string, cardType: CardType, fields: Field[]): Promise<DefaultResponse<null>> {
+    async update(clientId: string, cardType: CardType, fields: Field[]): Promise<DefaultResponse<[CardType, Field[]]>> {
         const {id: cardTypeId, ...newCardType} = cardType;
-        const [_, error] = await new Promise<DefaultResponse<null>>((resolve) => {
+        const [modifiedCardType, error] = await new Promise<DefaultResponse<CardType>>((resolve) => {
             const {name, templateFront, templateBack} = newCardType;
             const lastModifiedAt = Date.now();
             this.database.run(
                 `UPDATE card_types
-                 SET name             = ?,
-                     template_front   = ?,
-                     template_back    = ?,
-                     last_modified_at = ?
+                 SET name           = ?,
+                     templateFront  = ?,
+                     templateBack   = ?,
+                     lastModifiedAt = ?
                  WHERE id = ?
-                   AND client_id = ?`,
+                   AND clientId = ?`,
                 [name, templateFront, templateBack, lastModifiedAt, cardTypeId, clientId],
                 (err) => {
                     if (err) {
                         resolve([null, String(err)]);
                     } else {
-                        resolve([null, null]);
+                        resolve([{...cardType, lastModifiedAt, clientId}, null]);
                     }
                 }
             );
@@ -153,12 +153,16 @@ export default class CardTypeEntityStore {
 
         if (error) return [null, error]
 
+
+        const modifiedFields: Field[] = []
+
         for (const field of fields) {
-            const [__, _error] = await fieldEntityStore.update(clientId, field)
+            const [modifiedField, _error] = await fieldEntityStore.update(clientId, field)
             if (_error) return [null, _error]
+            modifiedFields.push(modifiedField!)
         }
 
-        return [null, null]
+        return [[modifiedCardType!, modifiedFields], null]
 
     }
 }

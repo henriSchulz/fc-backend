@@ -5,3 +5,4 @@ export default interface Field extends BaseModel {
     cardTypeId: string
     readonly clientId: string
 }
+
