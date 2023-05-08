@@ -10,8 +10,8 @@ import CardTypeEntityStore from "./stores/CardTypeEntityStore";
 import {addStack, createStack, deleteStack, getAllStacks, updateStack} from "./routes/stacks";
 import {addCard, createCard, deleteCard, getAllCards, updateCard} from "./routes/cards";
 import {addCardType, createCardType, deleteCardType, getAllCardTypes, updateCardType} from "./routes/cardTypes";
-import {getAllFields} from "./routes/fields";
-import {getAllFieldContents} from "./routes/FieldContents";
+import {addField, getAllFields} from "./routes/fields";
+import {addFieldContent, getAllFieldContents} from "./routes/fieldContents";
 import exp from "constants";
 import ClientEntityStore from "./stores/ClientEntityStore";
 import {authMiddleware, createClient, getUser, login, logout} from "./routes/auth";
@@ -66,9 +66,11 @@ app.post(`${DEFAULT_ROUTE}/${cardTypeEntityStore.uniqueId}/delete`,authMiddlewar
 
 //fieldRoutes
 app.get(`${DEFAULT_ROUTE}/${fieldEntityStore.uniqueId}`,authMiddleware, getAllFields) //payload: Field[]
+app.post(`${DEFAULT_ROUTE}/${fieldEntityStore.uniqueId}/add`,authMiddleware, addField) //payload: Field
 
 //fieldContentRoutes
 app.get(`${DEFAULT_ROUTE}/${fieldContentEntityStore.uniqueId}`,authMiddleware, getAllFieldContents) //payload: FieldContent[]
+app.post(`${DEFAULT_ROUTE}/${fieldContentEntityStore.uniqueId}/add`,authMiddleware, addFieldContent)
 
 //auth routes
 app.post(`${DEFAULT_ROUTE}/${clientEntityStore.uniqueId}/signup`, createClient) //payload: Client
