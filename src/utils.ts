@@ -116,7 +116,6 @@ function isId(str: any): boolean {
     return typeof str === 'string' && str.length === 8
 }
 
-const BASE_MODEL_KEYS = ['id', 'createdAt', 'lastModifiedAt', 'version'];
 
 export function isStack(obj: any): obj is Stack {
     return !(obj === null ||
@@ -138,7 +137,7 @@ export function isCard(obj: any): obj is Card {
         typeof obj.version !== 'number' ||
         typeof obj.dueAt !== 'number' ||
         typeof obj.learningState !== 'number' ||
-        typeof obj.paused !== 'boolean');
+        typeof obj.paused !== 'boolean' );
 }
 
 export function isField(obj: any): obj is Field {

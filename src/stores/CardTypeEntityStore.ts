@@ -2,7 +2,7 @@ import {Database} from "sqlite3";
 import {DefaultResponse} from "../types/responses/DefaultResponse";
 import CardType from "../types/CardType";
 import {generateModelId} from "../utils";
-import {fieldEntityStore, VERSION} from "../index";
+import {cardEntityStore, cardTypeEntityStore, fieldEntityStore, VERSION} from "../index";
 import FieldEntityStore from "./FieldEntityStore";
 import Field from "../types/Field";
 
@@ -123,6 +123,10 @@ export default class CardTypeEntityStore {
         const [__, _error] = await fieldEntityStore.deleteByCardTypeId(clientId, cardTypeId)
 
         if (_error) return [null, _error]
+
+        const [___, __error] = await cardEntityStore.deleteByCardTypeId(clientId, cardTypeId)
+
+        if (__error) return [null, __error]
 
         return [null, null]
     }

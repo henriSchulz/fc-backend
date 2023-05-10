@@ -69,7 +69,7 @@ export async function deleteCard(req: Request, res: Response) {
 
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
-    const {id: cardId} = req.body["id"]
+    const {id: cardId} = req.body
 
     if (!cardId) return res.status(422).json({error: "Invalid request Body. Missing property 'id'"})
 
@@ -86,6 +86,7 @@ export async function deleteCard(req: Request, res: Response) {
 
 //payload: {card: Card, fieldContents: FieldContent[]}
 export async function updateCard(req: Request, res: Response) {
+
     const client: Client = req.client!
 
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})

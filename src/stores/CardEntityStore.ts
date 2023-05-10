@@ -47,12 +47,34 @@ export default class CardEntityStore {
     }
 
     getAll(clientId: string): Promise<DefaultResponse<Card[]>> {
-        return new Promise((resolve) => this.database.all("SELECT * FROM cards WHERE clientId = ?", [clientId], (err, rows: Card[]) => {
+        return new Promise((resolve) => this.database.all("SELECT * FROM cards WHERE clientId = ?", [clientId],
+            (err, rows: { paused: 0 | 1, [key: string]: any }[]) => {
             if (err) {
                 resolve([
                     null, String(err)
                 ])
             } else {
+                const updatedRows = rows.map((row) => {
+                    return {
+                        ...row,
+                        paused: row.paused === 1
+                    };
+                });
+                resolve([updatedRows as Card[], null]);
+            }
+
+        }))
+    }
+
+    //updating row is unimportant, bc its only use for the id's
+    getAllByCardTypeId(clientId: string, cardTypeId: string): Promise<DefaultResponse<Card[]>> {
+        return new Promise((resolve) => this.database.all("SELECT * FROM cards WHERE clientId = ? AND cardTypeId = ?", [clientId, cardTypeId], (err, rows: Card[]) => {
+            if (err) {
+                resolve([
+                    null, String(err)
+                ])
+            } else {
+
                 resolve([rows, null])
             }
         }))
@@ -99,7 +121,7 @@ export default class CardEntityStore {
                 paused: paused as unknown as boolean
             }
             this.database.run(
-                'INSERT INTO cards (id, createdAt, lastModifiedAt, version ,clientId, stackId, card_typeId, dueAt, learningState, paused) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO cards (id, createdAt, lastModifiedAt, version ,clientId, stackId, cardTypeId, dueAt, learningState, paused) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [
                     id,
                     createdAt,
@@ -162,6 +184,36 @@ export default class CardEntityStore {
 
         return [null, null]
 
+    }
+
+    async deleteByCardTypeId(clientId: string, cardTypeId: string) {
+
+        const [cardsToDelete, ___error] = await this.getAllByCardTypeId(clientId, cardTypeId)
+
+        if (___error) return [null, ___error]
+
+        const [_, error] = await new Promise<DefaultResponse<null>>((resolve) => {
+            this.database.run(
+                'DELETE FROM cards WHERE cardTypeId = ? AND clientId = ?',
+                [cardTypeId, clientId],
+                (err) => {
+                    if (err) {
+                        resolve([null, String(err)])
+                    } else {
+                        resolve([null, null]);
+                    }
+                }
+            );
+        });
+
+        if (error) return [null, error]
+
+        for (const cardToDelete of cardsToDelete || []) {
+            const [__, _error] = await fieldContentEntityStore.deleteByCard(clientId, cardToDelete.id)
+            if (_error) return [null, _error]
+        }
+
+        return [null, null]
     }
 
     async update(clientId: string, card: Card, fieldContents: FieldContent[]): Promise<DefaultResponse<[Card, FieldContent[]]>> {
