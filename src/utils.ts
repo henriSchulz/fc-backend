@@ -100,17 +100,7 @@ export function randomBoolean() {
     return Math.random() < 0.5;
 }
 
-export function createDownload(name: string, content: string): void {
-    const blob = new Blob([content], {type: "text/plain"});
-    const fileUrl = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = fileUrl;
-    link.download = name
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(fileUrl);
-}
+
 
 function isId(str: any): boolean {
     return typeof str === 'string' && str.length === 8
@@ -123,7 +113,6 @@ export function isStack(obj: any): obj is Stack {
         !isId(obj.id) ||
         typeof obj.lastModifiedAt !== 'number' ||
         typeof obj.version !== 'number' ||
-        !isId(obj.clientId) ||
         typeof obj.name !== 'string');
 }
 

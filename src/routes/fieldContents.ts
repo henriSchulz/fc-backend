@@ -2,7 +2,7 @@ import {Request, Response} from "express";
 import Client from "../types/Client";
 import {ERROR_PREFIX, fieldContentEntityStore, LOG_PREFIX} from "../index";
 import FieldContent from "../types/FieldContent";
-import {isCard} from "../utils";
+import {isCard, isFieldContent} from "../utils";
 
 //payload: FieldContent[]
 export async function getAllFieldContents(req: Request, res: Response) {
@@ -24,9 +24,11 @@ export async function addFieldContent(req: Request, res: Response) {
 
     if (!req.body) return res.status(422).json({error: "Invalid request Body"})
 
-    const fieldContent: FieldContent = req.body["field"]
+    const fieldContent: FieldContent = req.body["fieldContent"]
 
-    if (!isCard(fieldContent)) return res.status(422).json({error: `Invalid request Body. Object ${fieldContent} is not typeof FieldContent`})
+    console.log(fieldContent)
+
+    if (!isFieldContent(fieldContent)) return res.status(422).json({error: `Invalid request Body. Object ${fieldContent} is not typeof FieldContent`})
 
     const [addedFieldContent, error] = await fieldContentEntityStore.add(client.id, fieldContent)
 

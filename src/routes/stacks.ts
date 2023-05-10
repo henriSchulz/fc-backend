@@ -50,9 +50,13 @@ export async function addStack(req: Request, res: Response) {
 
     const stack: Stack = req.body["stack"]
 
+
+
     if (!isStack(stack)) return res.status(422).json({error: `Invalid request Body. Object ${stack} is not typeof Stack`})
 
     const [modifiedStack, error] = await stackEntityStore.add(client.id, stack)
+
+
 
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)

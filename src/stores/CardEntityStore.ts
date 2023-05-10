@@ -216,6 +216,33 @@ export default class CardEntityStore {
         return [null, null]
     }
 
+    async deleteByStackId(clientId: string, stackId: string) {
+
+        const [cardsToDelete, ___error] = await this.getAllByStackId(clientId, stackId)
+
+        if (___error) return [null, ___error]
+
+        const [_, error] = await new Promise<DefaultResponse<null>>((resolve) => {
+            this.database.run(
+                'DELETE FROM cards WHERE stackId = ? AND clientId = ?',
+                [stackId, clientId],
+                (err) => {
+                    if (err) {
+                        resolve([null, String(err)])
+                    } else {
+                        resolve([null, null]);
+                    }
+                }
+            );
+        });
+        if (error) return [null, error]
+        for (const cardToDelete of cardsToDelete || []) {
+            const [__, _error] = await fieldContentEntityStore.deleteByCard(clientId, cardToDelete.id)
+            if (_error) return [null, _error]
+        }
+        return [null, null]
+    }
+
     async update(clientId: string, card: Card, fieldContents: FieldContent[]): Promise<DefaultResponse<[Card, FieldContent[]]>> {
         const {id: cardId, version, createdAt, ...newCard} = card;
         const [updatedCard, error] = await new Promise<DefaultResponse<Card>>((resolve) => {

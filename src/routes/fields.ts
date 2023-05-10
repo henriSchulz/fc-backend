@@ -2,7 +2,7 @@ import {Request, Response} from "express";
 import Client from "../types/Client";
 import {cardEntityStore, ERROR_PREFIX, fieldEntityStore, LOG_PREFIX} from "../index";
 import Card from "../types/Card";
-import {isCard} from "../utils";
+import {isCard, isField} from "../utils";
 import Field from "../types/Field";
 
 
@@ -28,7 +28,7 @@ export async function addField(req: Request, res: Response) {
 
     const field: Field = req.body["field"]
 
-    if (!isCard(field)) return res.status(422).json({error: `Invalid request Body. Object ${field} is not typeof Field`})
+    if (!isField(field)) return res.status(422).json({error: `Invalid request Body. Object ${field} is not typeof Field`})
 
     const [addedField, error] = await fieldEntityStore.add(client.id, field)
 

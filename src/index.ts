@@ -27,12 +27,16 @@ const database = new sqlite3.Database(`${__dirname}/data/fc_data.db`)
 
 createSQLTables(database)
 
+
+
 export const stackEntityStore = new StackEntityStore(database)
 export const cardEntityStore = new CardEntityStore(database)
 export const fieldEntityStore = new FieldEntityStore(database)
 export const fieldContentEntityStore = new FieldContentEntityStore(database)
 export const cardTypeEntityStore = new CardTypeEntityStore(database)
 export const clientEntityStore = new ClientEntityStore(database)
+
+
 
 
 const app = express();
@@ -85,6 +89,14 @@ const port = process.env.PORT || 4000;
 
 
 
-app.listen(port, () => {
-    console.log(`Server listening on port ${port}.`);
-});
+async function main() {
+    // const [client, error] = await clientEntityStore.create("henri", "1234")
+    // console.log(client?.token)
+
+    app.listen(port, () => {
+        console.log(`Server listening on port ${port}.`);
+    });
+
+}
+
+main()

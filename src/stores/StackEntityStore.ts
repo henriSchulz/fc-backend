@@ -2,7 +2,7 @@ import {Database} from "sqlite3";
 import {DefaultResponse} from "../types/responses/DefaultResponse";
 import {generateModelId} from "../utils";
 import Stack from "../types/Stack";
-import {VERSION} from "../index";
+import {cardEntityStore, fieldContentEntityStore, VERSION} from "../index";
 
 export default class StackEntityStore {
     private database: Database
@@ -23,9 +23,9 @@ export default class StackEntityStore {
                 [id, createdAt, lastModifiedAt, version, clientId, name],
                 (err) => {
                     if (err) {
-                        resolve([{...stack, name, lastModifiedAt, clientId}, String(err)]);
+                        resolve([null, String(err)]);
                     } else {
-                        resolve([null, null]);
+                        resolve([{...stack, name, lastModifiedAt, clientId}, null]);
                     }
                 }
             );
@@ -69,8 +69,8 @@ export default class StackEntityStore {
         });
     }
 
-    delete(clientId: string, stackId: string): Promise<DefaultResponse<null>> {
-        return new Promise((resolve) => {
+    async delete(clientId: string, stackId: string): Promise<DefaultResponse<null>> {
+        const [_, error] = await new Promise<DefaultResponse<null>>((resolve) => {
             this.database.run(
                 'DELETE FROM stacks WHERE id = ? AND clientId = ?',
                 [stackId, clientId],
@@ -83,6 +83,14 @@ export default class StackEntityStore {
                 }
             );
         });
+
+        if (error) return [null, error]
+
+        const [__, _error] = await cardEntityStore.deleteByStackId(clientId, stackId)
+
+        if (_error) return [null, _error]
+
+        return [null, null]
     }
 
     updateStack(clientId: string, stack: Stack): Promise<DefaultResponse<Stack>> {

@@ -122,7 +122,7 @@ export default class FieldEntityStore {
     deleteByCardTypeId(clientId: string, cardTypeId: string): Promise<DefaultResponse<null>> {
         return new Promise((resolve) => {
             this.database.run(
-                'DELETE FROM fields cardTypeId = ? AND clientId = ?',
+                'DELETE FROM fields WHERE cardTypeId = ? AND clientId = ?',
                 [cardTypeId, clientId],
                 (err) => {
                     if (err) {
