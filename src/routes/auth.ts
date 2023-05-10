@@ -69,8 +69,8 @@ export async function logout(req: Request, res: Response) {
     if (!token) return res.sendStatus(401)
 
     const [client, error] = await clientEntityStore.getByToken(token)
-
-    if (error || !client) {
+    if (!client) return res.sendStatus(401)
+    if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
         return res.sendStatus(401)
     }
@@ -94,7 +94,9 @@ export async function getUser(req: Request, res: Response) {
 
     const [client, error] = await clientEntityStore.getByToken(token)
 
-    if (error || !client) {
+    if (!client) return res.sendStatus(401)
+
+    if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
         return res.sendStatus(401)
     }
@@ -109,12 +111,13 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
             return res.sendStatus(401);
         }
         const token = authorization.split(" ")[1];
-        if (!token) {
-            return res.sendStatus(401);
-        }
+        if (!token) return res.sendStatus(401);
+
         const [client, error] = await clientEntityStore.getByToken(token);
-        if (error || !client) {
-            console.log(`${ERROR_PREFIX} ${error}`);
+
+        if (!client) return res.sendStatus(401)
+        if (error) {
+            console.log(`${ERROR_PREFIX} ${error ?? "Unauthorized"}`)
             return res.sendStatus(401);
         }
         req.client = client; // attach the client object to the request object

@@ -7,10 +7,9 @@ import {isArrayOfFields, isCardType} from "../utils";
 
 //payload: CardType[]
 export async function getAllCardTypes(req: Request, res: Response) {
-    const client: Client = {id: "11111111"} as Client //later imported using middleware
+    const client: Client = req.client!
 
     const [cardTypes, error] = await cardTypeEntityStore.getAll(client.id)
-
     if (error) {
         console.log(`${ERROR_PREFIX} ${error}`)
         return res.sendStatus(500)

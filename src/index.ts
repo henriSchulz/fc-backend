@@ -43,6 +43,8 @@ app.use(cors({
 }));
 
 
+
+
 //stack routes
 app.get(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}`, authMiddleware, getAllStacks) //payload: Stack[]
 app.post(`${DEFAULT_ROUTE}/${stackEntityStore.uniqueId}/create`, authMiddleware, createStack) //payload: Stack
@@ -80,6 +82,7 @@ app.get(`${DEFAULT_ROUTE}/${clientEntityStore.uniqueId}`, getUser) //payload: Cl
 
 
 const port = process.env.PORT || 4000;
+
 
 
 app.listen(port, () => {
